@@ -17,24 +17,34 @@ import { AdminLayout } from './admin/AdminLayout';
 import AppPage from './pages/App';
 import LitePaperPage from './pages/LitePaperPage';
 import { useUser } from './store/useUser';
+import AnalyticsDashboard from './admin/pages/AnalyticsDashboard';
+import ABTestsPage from './admin/pages/ABTestsPage';
+import LiveEventsPage from './admin/pages/LiveEventsPage';
+import FraudManagementPage from './admin/pages/FraudManagementPage';
+import NotificationCampaigns from './admin/pages/NotificationCampaigns';
 
-type AdminRoute = 'dashboard' | 'users' | 'fraud' | 'payouts' | 'boost-logs' | 'events' | 'tuning' | 'campaigns' | 'corrections' | 'revenue' | 'notifications';
+type AdminRoute = 'dashboard' | 'users' | 'fraud' | 'payouts' | 'boost-logs' | 'events' | 'tuning' | 'campaigns' | 'corrections' | 'revenue' | 'notifications' | 'analytics' | 'ab-tests' | 'live-events' | 'fraud-management' | 'notification-campaigns';
 
 function isAdminRoute(value: string): value is AdminRoute {
-  return ['dashboard', 'users', 'fraud', 'payouts', 'boost-logs', 'events', 'tuning', 'campaigns', 'corrections', 'revenue', 'notifications'].includes(value);
+  return ['dashboard', 'users', 'fraud', 'payouts', 'boost-logs', 'events', 'tuning', 'campaigns', 'corrections', 'revenue', 'notifications', 'analytics', 'ab-tests', 'live-events', 'fraud-management', 'notification-campaigns'].includes(value);
 }
 
 function resolveAdminRoute(pathname: string): AdminRoute {
   if (pathname.includes('/users')) return 'users';
+  if (pathname.includes('/fraud-management')) return 'fraud-management';
   if (pathname.includes('/fraud')) return 'fraud';
   if (pathname.includes('/payouts')) return 'payouts';
   if (pathname.includes('/boost-logs')) return 'boost-logs';
+  if (pathname.includes('/live-events')) return 'live-events';
   if (pathname.includes('/events')) return 'events';
   if (pathname.includes('/tuning')) return 'tuning';
+  if (pathname.includes('/notification-campaigns')) return 'notification-campaigns';
   if (pathname.includes('/campaigns')) return 'campaigns';
   if (pathname.includes('/corrections')) return 'corrections';
   if (pathname.includes('/revenue')) return 'revenue';
   if (pathname.includes('/notifications')) return 'notifications';
+  if (pathname.includes('/analytics')) return 'analytics';
+  if (pathname.includes('/ab-tests')) return 'ab-tests';
   return 'dashboard';
 }
 
@@ -100,16 +110,22 @@ export default function MainRouter() {
       >
         {pathname.includes('/users') ? (
           <UsersPage />
+        ) : pathname.includes('/fraud-management') ? (
+          <FraudManagementPage />
         ) : pathname.includes('/fraud') ? (
           <FraudReviewPage />
         ) : pathname.includes('/payouts') ? (
           <PayoutsPage />
         ) : pathname.includes('/boost-logs') ? (
           <BoostLogsPage />
+        ) : pathname.includes('/live-events') ? (
+          <LiveEventsPage />
         ) : pathname.includes('/events') ? (
           <AdminEventsPage />
         ) : pathname.includes('/tuning') ? (
           <AdminTuningPage />
+        ) : pathname.includes('/notification-campaigns') ? (
+          <NotificationCampaigns />
         ) : pathname.includes('/campaigns') ? (
           <AdminCampaignsPage />
         ) : pathname.includes('/corrections') ? (
@@ -118,6 +134,10 @@ export default function MainRouter() {
           <AdminRevenuePage />
         ) : pathname.includes('/notifications') ? (
           <AdminNotificationsPage />
+        ) : pathname.includes('/analytics') ? (
+          <AnalyticsDashboard />
+        ) : pathname.includes('/ab-tests') ? (
+          <ABTestsPage />
         ) : (
           <DashboardPage />
         )}

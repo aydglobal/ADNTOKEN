@@ -1,7 +1,7 @@
 export const springs = {
-  button: { type: "spring", stiffness: 380, damping: 24 },
-  card: { type: "spring", stiffness: 280, damping: 22 },
-  panel: { type: "spring", stiffness: 240, damping: 26 },
+  button: { type: "spring" as const, stiffness: 380, damping: 24 },
+  card: { type: "spring" as const, stiffness: 280, damping: 22 },
+  panel: { type: "spring" as const, stiffness: 240, damping: 26 },
 };
 
 export const fades = {
