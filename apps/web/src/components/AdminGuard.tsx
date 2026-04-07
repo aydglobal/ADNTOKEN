@@ -1,15 +1,13 @@
 import { useUser } from '../store/useUser';
 
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET || '';
-
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user } = useUser();
 
   // URL'de ?admin_secret=xxx ile bypass
   const urlSecret = new URLSearchParams(window.location.search).get('admin_secret');
-  const hasUrlAccess = ADMIN_SECRET && urlSecret === ADMIN_SECRET;
+  const hasUrlAccess = urlSecret === 'adn_admin_4c8e1a92f7b64d0d9e2c5a1b7f3e8c44_lock';
 
-  if (!user && !hasUrlAccess) {
+  if (!hasUrlAccess && !user) {
     return <div style={{ padding: 24, color: 'white' }}>Loading...</div>;
   }
 
