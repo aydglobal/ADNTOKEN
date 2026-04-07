@@ -1,5 +1,5 @@
 {
-  "installCommand": "pnpm install --dir ../.. --frozen-lockfile",
+  "installCommand": "pnpm install --dir ../.. --no-frozen-lockfile",
   "buildCommand": "pnpm --dir ../.. --filter web build",
   "outputDirectory": "dist",
   "rewrites": [
