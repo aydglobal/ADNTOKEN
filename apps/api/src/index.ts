@@ -21,6 +21,7 @@ import adminTuningRoutes from './routes/admin.tuning.routes';
 import adminCorrectionsRoutes from './routes/admin.corrections.routes';
 import adminRevenueRoutes from './routes/admin.revenue.routes';
 import adminNotificationsRoutes from './routes/admin.notifications.routes';
+import adminAbTestRoutes from './routes/admin.abtest.routes';
 import linkRoutes from './routes/link.routes';
 import referralRoutes from './routes/referral.routes';
 import referralQuestRoutes from './routes/referralQuest.routes';
@@ -212,8 +213,7 @@ app.use('/admin/campaigns', authMiddleware, adminOnlyMiddleware, adminCampaignsR
 app.use('/admin/corrections', authMiddleware, adminOnlyMiddleware, adminCorrectionsRoutes);
 app.use('/admin/revenue', authMiddleware, adminOnlyMiddleware, adminRevenueRoutes);
 app.use('/admin/notifications', authMiddleware, adminOnlyMiddleware, adminNotificationsRoutes);
-
-app.use('/api/admin/dashboard', authMiddleware, adminOnlyMiddleware, adminDashboardRoutes);
+app.use('/admin/ab-tests', authMiddleware, adminOnlyMiddleware, adminAbTestRoutes); authMiddleware, adminOnlyMiddleware, adminDashboardRoutes);
 app.use('/api/admin/users', authMiddleware, adminOnlyMiddleware, adminUsersRoutes);
 app.use('/api/admin/fraud', authMiddleware, adminOnlyMiddleware, adminFraudRoutes);
 app.use('/api/admin/logs', authMiddleware, adminOnlyMiddleware, adminLogsRoutes);
@@ -225,6 +225,7 @@ app.use('/api/admin/campaigns', authMiddleware, adminOnlyMiddleware, adminCampai
 app.use('/api/admin/corrections', authMiddleware, adminOnlyMiddleware, adminCorrectionsRoutes);
 app.use('/api/admin/revenue', authMiddleware, adminOnlyMiddleware, adminRevenueRoutes);
 app.use('/api/admin/notifications', authMiddleware, adminOnlyMiddleware, adminNotificationsRoutes);
+app.use('/api/admin/ab-tests', authMiddleware, adminOnlyMiddleware, adminAbTestRoutes);
 
 app.use('*', (_req, res) => {
   res.status(404).json({
@@ -264,3 +265,45 @@ app.listen(Number(env.PORT), '0.0.0.0', () => {
   };
   scheduleAnalyticsJob();
 });
+
+// Graceful shutdown — SIGTERM'de mevcut istekler tamamlanır
+const server = app.listen(Number(env.PORT), '0.0.0.0', () => {
+  logger.info({ port: env.PORT }, 'server_started');
+
+  setInterval(() => {
+    runNotificationWorker().catch((err) => logger.error({ err }, 'notification_worker_error'));
+  }, 10 * 60 * 1000);
+
+  const scheduleAnalyticsJob = () => {
+    const now = new Date();
+    const nextRun = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 5, 0));
+    const msUntilNextRun = nextRun.getTime() - now.getTime();
+    setTimeout(() => {
+      runAnalyticsDailyJob().catch((err) => logger.error({ err }, 'analytics_daily_job_error'));
+      setInterval(() => {
+        runAnalyticsDailyJob().catch((err) => logger.error({ err }, 'analytics_daily_job_error'));
+      }, 24 * 60 * 60 * 1000);
+    }, msUntilNextRun);
+    logger.info({ msUntilNextRun }, 'analytics_job_scheduled');
+  };
+  scheduleAnalyticsJob();
+});
+
+function gracefulShutdown(signal: string) {
+  logger.info({ signal }, 'shutdown_signal_received');
+  server.close(async () => {
+    logger.info('http_server_closed');
+    await prisma.$disconnect();
+    logger.info('db_disconnected');
+    process.exit(0);
+  });
+
+  // 10 saniye içinde kapanmazsa zorla kapat
+  setTimeout(() => {
+    logger.error('forced_shutdown');
+    process.exit(1);
+  }, 10_000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

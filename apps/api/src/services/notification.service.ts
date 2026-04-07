@@ -98,3 +98,66 @@ export async function getAdminNotificationSummary() {
 
   return { queued, sentToday };
 }
+
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 saat
+const RATE_LIMIT_MAX = 5;
+const BATCH_SIZE = 100;
+
+export async function checkRateLimit(userId: string): Promise<boolean> {
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+  const count = await prisma.notificationLog.count({
+    where: { userId, createdAt: { gte: since } }
+  });
+  return count < RATE_LIMIT_MAX;
+}
+
+export async function scheduleNotification(input: {
+  userId: string;
+  type: NotificationTrigger;
+  username?: string | null;
+  scheduledAt?: Date;
+  metadata?: Record<string, unknown>;
+}) {
+  const allowed = await checkRateLimit(input.userId);
+  if (!allowed) return null;
+
+  const text = buildNudgeText({ username: input.username, trigger: input.type });
+
+  return prisma.notificationLog.create({
+    data: {
+      userId: input.userId,
+      type: input.type,
+      messageText: text,
+      status: 'queued',
+      metadataJson: input.metadata ? JSON.stringify(input.metadata) : null
+    }
+  });
+}
+
+export async function sendBatch(
+  sendFn: (log: { id: string; userId: string; messageText: string }) => Promise<void>
+) {
+  const batch = await prisma.notificationLog.findMany({
+    where: { status: 'queued' },
+    orderBy: { createdAt: 'asc' }, // FIFO
+    take: BATCH_SIZE,
+    select: { id: true, userId: true, messageText: true }
+  });
+
+  for (const log of batch) {
+    try {
+      await sendFn(log);
+      await prisma.notificationLog.update({
+        where: { id: log.id },
+        data: { status: 'sent', sentAt: new Date() }
+      });
+    } catch {
+      await prisma.notificationLog.update({
+        where: { id: log.id },
+        data: { status: 'failed' }
+      });
+    }
+  }
+
+  return batch.length;
+}

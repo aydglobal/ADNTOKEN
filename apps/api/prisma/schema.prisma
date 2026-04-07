@@ -164,6 +164,7 @@ model User {
   metaClanHonor        Int      @default(0)
   adnBalance           Int      @default(0)
   eligibleRewardBalance Int      @default(0)
+  adminRole            String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   deletedAt            DateTime?
@@ -192,6 +193,8 @@ model User {
   notificationLogs NotificationLog[]
 
   @@index([username])
+  @@index([lastSeenAt])
+  @@index([suspiciousScore])
 }
 
 model Task {
@@ -373,6 +376,35 @@ model WithdrawalRequest {
 
   @@index([userId, status])
   @@index([status, createdAt])
+}
+
+model ABTest {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  title         String
+  description   String?
+  variantCount  Int       @default(2)
+  status        String    @default("active")
+  winnerVariant Int?
+  startedAt     DateTime  @default(now())
+  concludedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  assignments UserABTestAssignment[]
+}
+
+model UserABTestAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  testId    String
+  variant   Int
+  createdAt DateTime @default(now())
+
+  test ABTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, testId])
+  @@index([testId, variant])
 }
 
 model ReferralQuestTemplate {
@@ -644,15 +676,16 @@ model AnalyticsDaily {
 }
 
 model LiveEventConfig {
-  id            String   @id @default(cuid())
-  key           String   @unique
+  id            String    @id @default(cuid())
+  key           String    @unique
   title         String
   startsAt      DateTime
   endsAt        DateTime
-  isEnabled     Boolean  @default(true)
+  isEnabled     Boolean   @default(true)
   modifiersJson String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model NotificationCampaign {

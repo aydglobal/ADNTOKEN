@@ -3,8 +3,11 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { parsePagination } from '../lib/adminUtils';
 import { listFraudCases, resolveFraudCase } from '../services/adminFraud.service';
+import { suspendAccount } from '../services/fraudDetection.service';
+import { adminOnlyMiddleware } from '../middlewares/adminOnlyMiddleware';
 
 const router = Router();
+router.use(adminOnlyMiddleware);
 
 // Mevcut fraud case listesi
 router.get('/cases', async (req, res) => {
@@ -66,6 +69,15 @@ router.post('/ops/users/:userId/lock', async (req, res) => {
   });
 
   res.json({ success: true, user });
+});
+
+export default router;
+
+// Hesabı askıya al (suspend)
+router.post('/suspend/:userId', async (req, res) => {
+  const { reason } = req.body;
+  await suspendAccount(req.params.userId, reason || 'Admin action', req.user!.id);
+  res.json({ success: true });
 });
 
 export default router;

@@ -53,7 +53,10 @@ function inferTrigger(user: {
 
 export async function runNotificationWorker() {
   const users = await prisma.user.findMany({
-    where: { isBanned: false },
+    where: {
+      isBanned: false,
+      telegramId: { not: { startsWith: 'preview_' } }
+    },
     select: {
       id: true,
       username: true,
@@ -62,7 +65,7 @@ export async function runNotificationWorker() {
       engagementScore: true
     },
     take: 100,
-    orderBy: { updatedAt: 'desc' }
+    orderBy: { updatedAt: 'asc' } // FIFO — en eski güncellenenler önce
   });
 
   let processed = 0;

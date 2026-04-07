@@ -85,3 +85,116 @@ export async function getAnalyticsSummary() {
     ]
   };
 }
+
+export async function getMetricsTrend(days: number) {
+  const results = [];
+  const now = new Date();
+
+  for (let i = days - 1; i >= 0; i--) {
+    const dayStart = subDays(now, i + 1);
+    const dayEnd = subDays(now, i);
+
+    const [dau, newUsers, revenue] = await Promise.all([
+      prisma.user.count({ where: { lastSeenAt: { gte: dayStart, lt: dayEnd } } }),
+      prisma.user.count({ where: { createdAt: { gte: dayStart, lt: dayEnd } } }),
+      prisma.payment.aggregate({
+        _sum: { amount: true },
+        where: { status: 'paid', createdAt: { gte: dayStart, lt: dayEnd } }
+      })
+    ]);
+
+    const revenueTotal = Number(revenue._sum.amount || 0);
+    results.push({
+      date: dayStart.toISOString().slice(0, 10),
+      dau,
+      newUsers,
+      revenue: revenueTotal,
+      arpu: dau > 0 ? Number((revenueTotal / dau).toFixed(4)) : 0
+    });
+  }
+
+  return results;
+}
+
+export async function getSegmentedUsers(filter: {
+  minLevel?: number;
+  maxLevel?: number;
+  minSpend?: number;
+  segment?: string;
+  limit?: number;
+}) {
+  const where: Record<string, unknown> = {};
+
+  if (filter.minLevel !== undefined || filter.maxLevel !== undefined) {
+    where.level = {};
+    if (filter.minLevel !== undefined) (where.level as Record<string, number>).gte = filter.minLevel;
+    if (filter.maxLevel !== undefined) (where.level as Record<string, number>).lte = filter.maxLevel;
+  }
+
+  if (filter.segment) {
+    where.engagementScore = { is: { segment: filter.segment } };
+  }
+
+  return prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      displayName: true,
+      username: true,
+      level: true,
+      totalLifetimeCoins: true,
+      createdAt: true,
+      lastSeenAt: true,
+      engagementScore: { select: { segment: true, engagementScore: true } }
+    },
+    orderBy: { totalLifetimeCoins: 'desc' },
+    take: filter.limit ?? 100
+  });
+}
+
+export async function calculateARPU(days = 1) {
+  const since = subDays(new Date(), days);
+  const [dau, revenue] = await Promise.all([
+    prisma.user.count({ where: { lastSeenAt: { gte: since } } }),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { status: 'paid', createdAt: { gte: since } }
+    })
+  ]);
+  const total = Number(revenue._sum.amount || 0);
+  return { dau, revenue: total, arpu: dau > 0 ? Number((total / dau).toFixed(4)) : 0 };
+}
+
+export async function calculateLTV() {
+  const result = await prisma.payment.aggregate({
+    _avg: { amount: true },
+    where: { status: 'paid' }
+  });
+  return Number(result._avg.amount || 0);
+}
+
+export async function detectAnomalies() {
+  const today = new Date();
+  const yesterday = subDays(today, 1);
+  const dayBefore = subDays(today, 2);
+
+  const [todayDau, yesterdayDau] = await Promise.all([
+    prisma.user.count({ where: { lastSeenAt: { gte: yesterday } } }),
+    prisma.user.count({ where: { lastSeenAt: { gte: dayBefore, lt: yesterday } } })
+  ]);
+
+  const anomalies: { metric: string; drop: number; alert: string }[] = [];
+
+  if (yesterdayDau > 0) {
+    const drop = (yesterdayDau - todayDau) / yesterdayDau;
+    if (drop >= 0.2) {
+      anomalies.push({
+        metric: 'dau',
+        drop: Number((drop * 100).toFixed(1)),
+        alert: `DAU dropped ${(drop * 100).toFixed(1)}% vs previous day`
+      });
+    }
+  }
+
+  return anomalies;
+}

@@ -3,7 +3,35 @@ import { prisma } from '../lib/prisma';
 export async function getPublicLiveEvents() {
   const now = new Date();
   return prisma.liveEventConfig.findMany({
-    where: { isEnabled: true, endsAt: { gt: now } }
+    where: { isEnabled: true, endsAt: { gt: now }, deletedAt: null }
+  });
+}
+
+export async function createLiveEvent(data: {
+  key: string;
+  title: string;
+  startsAt: Date;
+  endsAt: Date;
+  modifiersJson: string;
+  isEnabled?: boolean;
+}) {
+  return prisma.liveEventConfig.create({ data });
+}
+
+export async function updateLiveEvent(key: string, data: {
+  title?: string;
+  startsAt?: Date;
+  endsAt?: Date;
+  modifiersJson?: string;
+  isEnabled?: boolean;
+}) {
+  return prisma.liveEventConfig.update({ where: { key }, data });
+}
+
+export async function deleteLiveEvent(key: string) {
+  return prisma.liveEventConfig.update({
+    where: { key },
+    data: { deletedAt: new Date(), isEnabled: false }
   });
 }
 
@@ -68,5 +96,19 @@ export async function stopLiveEvent(eventKey: string) {
 }
 
 export async function getLiveEvents() {
-  return prisma.liveEventConfig.findMany({ orderBy: { startsAt: 'desc' } });
+  return prisma.liveEventConfig.findMany({
+    where: { deletedAt: null },
+    orderBy: { startsAt: 'desc' }
+  });
+}
+
+export async function getActiveEventsWithStats() {
+  const now = new Date();
+  const events = await prisma.liveEventConfig.findMany({
+    where: { isEnabled: true, endsAt: { gt: now }, deletedAt: null }
+  });
+  return events.map(event => ({
+    ...event,
+    remainingMs: event.endsAt.getTime() - now.getTime(),
+  }));
 }
