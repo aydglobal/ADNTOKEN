@@ -963,6 +963,17 @@ export default function App() {
           visible={levelUpOverlay.visible}
           onDone={() => setLevelUpOverlay((prev) => ({ ...prev, visible: false }))}
         />
+
+        <div className="adn-footer-sig">
+          ADN TOKEN © 2026
+          {' · '}
+          <button
+            className="adn-footer-sig__link"
+            onClick={() => { window.history.pushState({}, '', '/terms'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+          >
+            Koşullar & SSS
+          </button>
+        </div>
       </div>
       <OnboardingOverlay step={onboardingStep} onNext={handleOnboardingNext} />
       <MissionDrawerMobile
@@ -989,7 +1000,7 @@ export default function App() {
 
 function LoadingScreen({ label = 'ADN Arena yukleniyor' }: { label?: string }) {
   return (
-    <div className="game-loading">
+    <div className="game-loading" style={{ flexDirection: 'column' }}>
       <div className="game-loading__backdrop">
         <span className="game-loading__orb game-loading__orb--gold" />
         <span className="game-loading__orb game-loading__orb--cyan" />
@@ -1040,6 +1051,8 @@ function LoadingScreen({ label = 'ADN Arena yukleniyor' }: { label?: string }) {
           </div>
         </div>
       </div>
+
+      <div className="adn-footer-sig">ADN TOKEN © 2026</div>
     </div>
   );
 }

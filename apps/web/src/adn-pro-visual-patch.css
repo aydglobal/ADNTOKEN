@@ -1553,3 +1553,41 @@ body[data-low-perf="true"] .game-dock__badge {
   justify-content: center;
   box-shadow: 0 0 22px rgba(56,189,248,0.2);
 }
+
+/* ===== ADN FOOTER SIGNATURE ===== */
+.adn-footer-sig {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  padding: 10px 16px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.adn-footer-sig__link {
+  background: none;
+  border: none;
+  color: rgba(56, 189, 248, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.adn-footer-sig__link:hover {
+  color: rgba(56, 189, 248, 0.8);
+}
+
+/* Loading screen footer — absolute bottom */
+.game-loading .adn-footer-sig {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+}

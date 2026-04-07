@@ -16,6 +16,7 @@ import { AdminNotificationsPage } from './admin/pages/AdminNotificationsPage';
 import { AdminLayout } from './admin/AdminLayout';
 import AppPage from './pages/App';
 import LitePaperPage from './pages/LitePaperPage';
+import TermsPage from './pages/TermsPage';
 import { useUser } from './store/useUser';
 import AnalyticsDashboard from './admin/pages/AnalyticsDashboard';
 import ABTestsPage from './admin/pages/ABTestsPage';
@@ -85,6 +86,11 @@ export default function MainRouter() {
 
   const isAdminPath = pathname === '/admin' || pathname.startsWith('/admin/');
   const isLitePaperPath = pathname === '/lite-paper' || pathname.startsWith('/lite-paper/') || pathname === '/adntoken-lite-paper' || pathname.startsWith('/adntoken-lite-paper/');
+  const isTermsPath = pathname === '/terms' || pathname.startsWith('/terms/') || pathname === '/faq' || pathname.startsWith('/faq/');
+
+  if (isTermsPath) {
+    return <TermsPage />;
+  }
 
   if (isLitePaperPath) {
     return <LitePaperPage />;

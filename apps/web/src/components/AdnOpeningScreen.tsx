@@ -117,6 +117,9 @@ export default function AdnOpeningScreen({ onEnter, balance = 0, level = 1, comb
               {t.litepaper}
             </motion.button>
           </div>
+          <div style={{ marginTop: 12, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em' }}>
+            ADN TOKEN © 2026
+          </div>
         </motion.div>
       </div>
     </div>
