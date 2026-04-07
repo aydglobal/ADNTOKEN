@@ -1,53 +1,16 @@
 services:
-  - type: web
-    name: adn-api
-    runtime: node
-    rootDir: .
-    plan: free
-    buildCommand: pnpm install && pnpm --filter api prisma generate && pnpm --filter api prisma db push && pnpm --filter api build
-    startCommand: pnpm --filter api start
-    healthCheckPath: /health
-    envVars:
-      - key: PORT
-        value: 10000
-      - key: DATABASE_URL
-        fromDatabase:
-          name: adn-postgres
-          property: connectionString
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: MINIAPP_URL
-        sync: false
-      - key: ADMIN_SECRET
-        sync: false
-      - key: ADMIN_TELEGRAM_USERNAME
-        value: aydinsagban
-      - key: MIN_WITHDRAWAL_COINS
-        value: 50000
-      - key: WITHDRAWAL_COOLDOWN_HOURS
-        value: 24
-
-  - type: web
+  - type: worker
     name: adn-bot
     runtime: node
-    rootDir: .
-    plan: free
-    buildCommand: pnpm install && pnpm --filter bot build
-    startCommand: pnpm --filter bot start
-    healthCheckPath: /
+    rootDir: apps/bot
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
-      - key: PORT
-        value: 10000
       - key: BOT_TOKEN
         sync: false
-      - key: BOT_USERNAME
-        value: adntoken_bot
       - key: MINIAPP_URL
         sync: false
-
-databases:
-  - name: adn-postgres
-    databaseName: adn_airdrop
-    user: adn_airdrop
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
