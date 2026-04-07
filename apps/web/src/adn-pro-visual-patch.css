@@ -1683,3 +1683,44 @@ body[data-low-perf="true"] .game-dock__badge {
   gap: 8px;
   min-height: 160px;
 }
+
+/* ===== PERFORMANS OPTİMİZASYONU ===== */
+/* Blur animasyonları GPU'yu yoruyor — kaldır */
+.game-shell::before,
+.game-shell::after {
+  animation: none !important;
+  will-change: auto !important;
+}
+
+/* Backdrop-filter sadece kritik yerlerde */
+.game-header,
+.game-dock,
+.adn-balance-strip {
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Diğer kartlarda backdrop-filter kaldır */
+.game-panel,
+.game-metric-card,
+.game-task-card,
+.game-market-card,
+.game-daily-card,
+.game-hero-stat,
+.game-active-boost {
+  backdrop-filter: none !important;
+}
+
+/* Halo animasyonu sadece tap ekranında */
+.game-tapper__halo {
+  will-change: transform, opacity;
+}
+
+/* Particle animasyonları azalt */
+.game-core-particle {
+  animation-duration: 4s !important;
+}
+
+/* Orb float animasyonları kaldır — en ağır olanlar */
+.game-loading__orb {
+  animation: none !important;
+}

@@ -194,6 +194,31 @@ export async function startTelegramBot() {
 
   // Webhook'u temizle, polling başlat
   await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+
+  // Gizli admin komutu — sadece admin kullanıcıya çalışır
+  const ADMIN_USERNAME = process.env.ADMIN_TELEGRAM_USERNAME || 'aydinsagban';
+  const ADMIN_CMD = process.env.ADMIN_BOT_CMD || '/adnpanel9x';
+
+  bot.hears(ADMIN_CMD, async (ctx) => {
+    const username = ctx.from?.username || '';
+    if (username.toLowerCase() !== ADMIN_USERNAME.toLowerCase()) {
+      // Yabancıya sessizce geç — komut yokmuş gibi davran
+      return;
+    }
+    const adminUrl = `${WEBAPP_URL}/admin?admin_secret=${process.env.ADMIN_SECRET || ''}`;
+    await ctx.reply(
+      `🔐 *Admin Paneli*\n\nErişim bağlantısı:\n[Admin Panelini Aç](${adminUrl})`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔐 Admin Panelini Aç', web_app: { url: adminUrl } }]
+          ]
+        }
+      }
+    );
+  });
+
   bot.launch();
   console.log('[bot] Telegram bot polling modunda baslatildi.');
 

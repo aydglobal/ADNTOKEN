@@ -47,10 +47,10 @@ export function ScreenTransition({ screenKey, children }: ScreenTransitionProps)
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={screenKey}
-        initial={{ opacity: 0, y: 18, scale: 0.985, filter: "blur(10px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: -10, scale: 0.992, filter: "blur(8px)" }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
         style={{ width: "100%" }}
       >
         {children}

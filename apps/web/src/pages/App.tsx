@@ -206,7 +206,7 @@ export default function App() {
   const [rebootFx, setRebootFx] = useState(false);
   const [rebootReveal, setRebootReveal] = useState('');
   const [now, setNow] = useState(Date.now());
-  const [feedIndex, setFeedIndex] = useState(0);
+  const nowRef = useRef(Date.now());
   const [onboardingStep, setOnboardingStep] = useState<
     'welcome' | 'tap_once' | 'open_shop' | 'buy_upgrade' | 'open_missions' | 'open_referral' | 'finish'
   >('finish');
@@ -228,8 +228,14 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  // now sadece countdown ve event window için — tap sırasında re-render tetiklemesin
+  const nowRef = useRef(Date.now());
+
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const timer = window.setInterval(() => {
+      nowRef.current = Date.now();
+      setNow(Date.now());
+    }, 5000);
     return () => window.clearInterval(timer);
   }, []);
 
