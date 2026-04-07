@@ -19,6 +19,11 @@ declare global {
 }
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Admin secret varsa auth'u atla — adminOnlyMiddleware halleder
+  if (req.header('x-admin-secret') === env.ADMIN_SECRET) {
+    return next();
+  }
+
   try {
     const user =
       (await resolveBearerUser(req)) ||
