@@ -256,13 +256,8 @@ export default function AdnOpeningScreen({
         <main className="adn-opening-main">
           <LeftPanel
             t={t}
-            stats={stats}
-            dailyRewardAmount={dailyRewardAmount}
-            nextUnlockTitle={nextUnlockTitle}
-            nextUnlockRemaining={nextUnlockRemaining}
             onEnter={onEnter}
             onLitepaper={onOpenLitepaper}
-            onClaimDaily={onClaimDaily}
           />
           <RightPanel
             t={t}
@@ -306,17 +301,12 @@ function TopBar({ t, onSettings, onBell }: { t: typeof translations["en"]; onSet
 }
 
 function LeftPanel({
-  t, stats, dailyRewardAmount, nextUnlockTitle, nextUnlockRemaining,
-  onEnter, onLitepaper, onClaimDaily,
+  t,
+  onEnter, onLitepaper,
 }: {
   t: typeof translations["en"];
-  stats: { label: string; value: string; icon: React.ElementType }[];
-  dailyRewardAmount: number;
-  nextUnlockTitle: string;
-  nextUnlockRemaining: number;
   onEnter: () => void;
   onLitepaper?: () => void;
-  onClaimDaily?: () => void;
 }) {
   return (
     <section className="adn-opening-left">
@@ -345,44 +335,9 @@ function LeftPanel({
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.26 }}
-        className="adn-opening-stats-grid"
-      >
-        {stats.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <motion.div
-              key={item.label}
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 220, damping: 18 }}
-              className="adn-opening-stat-card"
-            >
-              <div className="adn-opening-stat-card-inner">
-                <div>
-                  <p className="adn-opening-stat-label">{item.label}</p>
-                  <p className="adn-opening-stat-value">{item.value}</p>
-                </div>
-                <div className="adn-opening-stat-icon"><Icon size={16} /></div>
-              </div>
-              <motion.div
-                initial={{ scaleX: 0.3, opacity: 0.45 }}
-                animate={{ scaleX: 1, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.3 + index * 0.08 }}
-                className="adn-opening-stat-bar"
-              >
-                <div className="adn-opening-stat-bar-fill" />
-              </motion.div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
-      <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.34 }}
+        transition={{ duration: 0.6, delay: 0.26 }}
         className="adn-opening-cta-row"
       >
         <motion.button
@@ -402,25 +357,6 @@ function LeftPanel({
         >
           {t.litepaper}
         </motion.button>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.42 }}
-        className="adn-opening-info-grid"
-      >
-        <InfoCard
-          title={t.dailyRewardReady}
-          value={`+${fmt(dailyRewardAmount)} ADN`}
-          sub={t.dailyReady}
-          onClick={onClaimDaily}
-        />
-        <InfoCard
-          title={t.nextUnlock}
-          value={nextUnlockTitle}
-          sub={`${nextUnlockRemaining} missions`}
-        />
       </motion.div>
     </section>
   );
@@ -452,6 +388,9 @@ function RightPanel({
             <img src={startlionImg} alt="ADN Lion" className="adn-opening-lion-img" />
             <div className="adn-opening-img-overlay-bottom" />
             <div className="adn-opening-img-overlay-top" />
+            <HudPill className="adn-hud-tl" title={t.balance} value={`${fmt(balance)} ADN`} glow="cyan" />
+            <HudPill className="adn-hud-tr" title="Level" value={`Lv. ${level}`} glow="gold" />
+            <HudPill className="adn-hud-bl" title={t.combo} value={`x${combo} ${t.comboReady}`} glow="cyan" />
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
