@@ -239,7 +239,7 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
         level: nextGameplay.level,
         maxEnergy: nextGameplay.maxEnergy,
         offlineCapHours: nextGameplay.offlineCapHours,
-        lastEnergyAt: restored.lastEnergyAt,
+        lastEnergyAt: new Date(), // her tap'te sıfırla — restore birikmesin
         tapNonce: generateTapNonce(),
         lastTapAt: new Date(),
         totalTaps: { increment: antiCheat.tapCount },
