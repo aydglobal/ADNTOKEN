@@ -41,6 +41,7 @@ import ChestRevealSequence from '../components/ChestRevealSequence';
 import { ScreenTransition, TapMotionButton, MotionCard, ChestRevealMotion } from '../components/MotionPack';
 import FeedbackSettingsCard from '../components/FeedbackSettingsCard';
 import AdnOpeningScreen from '../components/AdnOpeningScreen';
+import { calcEmpireStats } from '../hooks/useEmpireEngine';
 
 type TabKey = 'mine' | 'boosts' | 'tasks' | 'wallet' | 'social' | 'settings';
 
@@ -435,17 +436,40 @@ export default function App() {
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
+    // Empire engine hesaplaması
+    const empireStats = calcEmpireStats({
+      level: user.level ?? 1,
+      prestige: (user as any).prestigePower ?? 0,
+      tapPowerLevel: 0,
+      comboMasteryLevel: 0,
+      critEngineLevel: 0,
+      autoMinerLevel: 0,
+      tradeDeskLevel: 0,
+      quantumRigLevel: 0,
+      vipVaultLevel: 0,
+      combo: comboCount,
+    });
+
+    const isCrit = Math.random() < empireStats.critChance;
+    const baseGain = Math.max(1, user.tapPower);
+    const empireGain = isCrit
+      ? baseGain * empireStats.comboMultiplier * empireStats.critMultiplier
+      : baseGain * empireStats.comboMultiplier;
+
     pushRipple(x, y);
-    pushBurst(`+${fmt(Math.max(1, user.tapPower))}`, x, y, 'gold');
+    if (isCrit) {
+      pushBurst(`CRIT x${empireStats.critMultiplier.toFixed(1)}`, x, y, 'pink');
+    }
+    pushBurst(`+${fmt(Math.round(empireGain))}`, x, y, 'gold');
     triggerImpact('tap');
     playSoftClick();
     playHaptic('light');
     registerTap();
 
-    // Optimistic update — anında göster, API'yi arka planda çağır
+    // Optimistic update
     setUser({
       ...user,
-      coins: user.coins + Math.max(1, user.tapPower),
+      coins: user.coins + Math.round(empireGain),
       energy: Math.max(0, user.energy - 1),
     });
 
