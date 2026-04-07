@@ -14,7 +14,8 @@ import {
 import { syncPassiveIncome } from './income.service';
 
 export async function getProfile(userId: string) {
-  await syncPassiveIncome(userId).catch(() => null);
+  // syncPassiveIncome sadece explicit claim'de çağrılır, her profile fetch'te değil
+  // await syncPassiveIncome(userId).catch(() => null);
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -51,27 +52,39 @@ export async function getProfile(userId: string) {
     regenPerMinute: effectiveRegenPerMinute
   });
 
-  const updatedUser = await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      energy: restored.energy,
-      maxEnergy: gameplay.maxEnergy,
-      level: gameplay.level,
-      passiveIncomePerHour: gameplay.passiveIncomePerHour,
-      offlineCapHours: gameplay.offlineCapHours,
-      lastEnergyAt: restored.lastEnergyAt
-    },
-    include: {
-      boosts: true,
-      ownedUpgrades: true,
-      referralsSent: true,
-      clanMembership: {
+  const needsUpdate =
+    restored.energy !== user.energy ||
+    effectiveEnergyMax !== user.maxEnergy ||
+    user.level !== gameplay.level ||
+    user.passiveIncomePerHour !== gameplay.passiveIncomePerHour;
+
+  const updatedUser = needsUpdate
+    ? await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          energy: restored.energy,
+          maxEnergy: gameplay.maxEnergy,
+          level: gameplay.level,
+          passiveIncomePerHour: gameplay.passiveIncomePerHour,
+          offlineCapHours: gameplay.offlineCapHours,
+          lastEnergyAt: restored.lastEnergyAt
+        },
         include: {
-          clan: true
+          boosts: true,
+          ownedUpgrades: true,
+          referralsSent: true,
+          clanMembership: { include: { clan: true } }
         }
-      }
-    }
-  });
+      })
+    : await prisma.user.findUniqueOrThrow({
+        where: { id: user.id },
+        include: {
+          boosts: true,
+          ownedUpgrades: true,
+          referralsSent: true,
+          clanMembership: { include: { clan: true } }
+        }
+      });
 
   const prestigeBonus = calculatePrestigeBonus(gameplay.level);
   const critChance = calculateCritChance(gameplay.level);

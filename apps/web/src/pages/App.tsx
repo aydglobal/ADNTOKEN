@@ -356,7 +356,9 @@ export default function App() {
         userRank,
         now
       }),
-    [user, topEvent, daily, dashboard, activeMission, claimableMission, chestVault, activeBoosts, referral, userRank, now]
+    // now intentionally excluded — feed rotates via its own interval, not every second
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, topEvent, daily, dashboard, activeMission, claimableMission, chestVault, activeBoosts, referral, userRank]
   );
 
   useEffect(() => {
@@ -491,24 +493,24 @@ export default function App() {
     registerTap();
 
     // Optimistic update
-    setUser({
-      ...user,
-      coins: user.coins + Math.round(empireGain),
-      energy: Math.max(0, user.energy - 1),
-    });
+    setUser((prev: any) => prev ? {
+      ...prev,
+      coins: prev.coins + Math.round(empireGain),
+      energy: Math.max(0, prev.energy - 1),
+    } : prev);
 
     try {
       const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
-      setUser({
-        ...user,
+      setUser((prev: any) => prev ? {
+        ...prev,
         coins: result.coins,
         energy: result.energy,
-        maxEnergy: result.energyMax ?? user.maxEnergy,
+        maxEnergy: result.energyMax ?? prev.maxEnergy,
         level: result.level,
-        tapNonce: result.tapNonce ?? user.tapNonce,
-        tapMultiplier: result.tapMultiplier ?? user.tapMultiplier,
-        passiveIncomePerHour: result.passiveIncomePerHour ?? user.passiveIncomePerHour
-      });
+        tapNonce: result.tapNonce ?? prev.tapNonce,
+        tapMultiplier: result.tapMultiplier ?? prev.tapMultiplier,
+        passiveIncomePerHour: result.passiveIncomePerHour ?? prev.passiveIncomePerHour
+      } : prev);
       if (result.criticalHit) {
         pushBurst(`KRITIK x${result.critMultiplier || 2}`, x + 24, y - 16, 'pink');
         gameBus.emit('crit', { multiplier: result.critMultiplier });

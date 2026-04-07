@@ -5,6 +5,12 @@ export function restoreEnergy(params: {
   regenPerMinute: number;
 }) {
   const { currentEnergy, lastEnergyAt, energyMax, regenPerMinute } = params;
+
+  // Zaten max ise hesaplama yapma
+  if (currentEnergy >= energyMax) {
+    return { energy: energyMax, lastEnergyAt };
+  }
+
   const now = new Date();
   const minutesPassed = Math.max(
     0,
@@ -19,9 +25,11 @@ export function restoreEnergy(params: {
   }
 
   const restored = minutesPassed * regenPerMinute;
+  const newEnergy = Math.min(currentEnergy + restored, energyMax);
 
   return {
-    energy: Math.min(currentEnergy + restored, energyMax),
-    lastEnergyAt: now
+    energy: newEnergy,
+    // lastEnergyAt'i sadece gerçekten enerji restore edildiyse güncelle
+    lastEnergyAt: restored > 0 ? now : lastEnergyAt
   };
 }
