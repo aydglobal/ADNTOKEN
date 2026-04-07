@@ -254,6 +254,11 @@ const server = app.listen(Number(env.PORT), '0.0.0.0', () => {
     runNotificationWorker().catch((err) => logger.error({ err }, 'notification_worker_error'));
   }, 10 * 60 * 1000);
 
+  // Render ücretsiz plan uyku önleme — her 10 dakikada self-ping
+  setInterval(() => {
+    fetch(`http://localhost:${env.PORT}/health`).catch(() => null);
+  }, 10 * 60 * 1000);
+
   const scheduleAnalyticsJob = () => {
     const now = new Date();
     const nextRun = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 5, 0));

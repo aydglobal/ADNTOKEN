@@ -1724,3 +1724,54 @@ body[data-low-perf="true"] .game-dock__badge {
 .game-loading__orb {
   animation: none !important;
 }
+
+/* ===== XP BAR ===== */
+.adn-xp-bar {
+  margin: 6px 0 8px;
+  padding: 0 2px;
+}
+
+.adn-xp-bar__track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.adn-xp-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8 0%, #8b5cf6 60%, #f6c453 100%);
+  box-shadow: 0 0 10px rgba(56,189,248,0.4);
+  transition: width 600ms ease;
+}
+
+.adn-xp-bar__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3px;
+}
+
+.adn-xp-bar__lv {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(56,189,248,0.8);
+  letter-spacing: 0.06em;
+}
+
+.adn-xp-bar__val {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.04em;
+}
+
+/* ===== BOTTOM NAV — yukarı çek ===== */
+.game-shell {
+  padding-bottom: 76px !important;
+}
+
+nav[style*="position: fixed"] {
+  bottom: 0 !important;
+}

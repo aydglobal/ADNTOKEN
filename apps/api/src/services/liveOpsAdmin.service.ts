@@ -1,10 +1,27 @@
 import { prisma } from '../lib/prisma';
 
-export async function getPublicLiveEvents() {
-  const now = new Date();
-  return prisma.liveEventConfig.findMany({
-    where: { isEnabled: true, endsAt: { gt: now }, deletedAt: null }
+// ── Live event cache — her tap'ta DB'ye gitmesin ──────────────────────────────
+let _eventCache: { data: any[]; expiresAt: number } | null = null;
+const EVENT_CACHE_TTL_MS = 30_000; // 30 saniye cache
+
+async function getCachedLiveEvents() {
+  const now = Date.now();
+  if (_eventCache && _eventCache.expiresAt > now) {
+    return _eventCache.data;
+  }
+  const events = await prisma.liveEventConfig.findMany({
+    where: { isEnabled: true, endsAt: { gt: new Date() }, deletedAt: null }
   });
+  _eventCache = { data: events, expiresAt: now + EVENT_CACHE_TTL_MS };
+  return events;
+}
+
+export function invalidateLiveEventCache() {
+  _eventCache = null;
+}
+
+export async function getPublicLiveEvents() {
+  return getCachedLiveEvents();
 }
 
 export async function createLiveEvent(data: {
@@ -36,7 +53,7 @@ export async function deleteLiveEvent(key: string) {
 }
 
 export async function getActiveTapMultiplier(): Promise<number> {
-  const events = await getPublicLiveEvents();
+  const events = await getCachedLiveEvents();
   let multiplier = 1;
   for (const event of events) {
     try {
@@ -44,15 +61,13 @@ export async function getActiveTapMultiplier(): Promise<number> {
       if (mods.tapMultiplier && mods.tapMultiplier > multiplier) {
         multiplier = mods.tapMultiplier;
       }
-    } catch {
-      // geçersiz JSON — atla
-    }
+    } catch { /* geçersiz JSON — atla */ }
   }
   return multiplier;
 }
 
 export async function getActiveChestLuckMultiplier(): Promise<number> {
-  const events = await getPublicLiveEvents();
+  const events = await getCachedLiveEvents();
   let multiplier = 1;
   for (const event of events) {
     try {
@@ -64,9 +79,7 @@ export async function getActiveChestLuckMultiplier(): Promise<number> {
         const derived = mods.jackpotMultiplier * 0.5;
         if (derived > multiplier) multiplier = derived;
       }
-    } catch {
-      // geçersiz JSON — atla
-    }
+    } catch { /* geçersiz JSON — atla */ }
   }
   return multiplier;
 }

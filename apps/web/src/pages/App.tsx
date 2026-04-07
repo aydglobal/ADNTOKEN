@@ -821,6 +821,9 @@ export default function App() {
             <HeaderStat icon="boost" label="Boost" value={activeBoosts.length ? `${activeBoosts.length}x` : '-'} />
           </div>        </header>
 
+        {/* XP Bar */}
+        <XpBar xp={user.xp ?? user.coins} level={user.level} />
+
         {/* Balance Strip */}
         <div className="adn-balance-strip">
           <div className="adn-balance-strip__item adn-balance-strip__item--gold">
@@ -1294,6 +1297,39 @@ function HeaderStat({ icon, label, value }: { icon: AppIconName; label: string; 
       <div>
         <span className="game-header-stat__label">{label}</span>
         <strong className="game-header-stat__value">{value}</strong>
+      </div>
+    </div>
+  );
+}
+
+// XP eşikleri — levelTable'dan basitleştirilmiş
+const XP_THRESHOLDS: Record<number, number> = {
+  1: 80, 2: 120, 3: 180, 4: 260, 5: 360, 6: 500, 7: 680, 8: 860,
+  9: 1100, 10: 1380, 11: 1720, 12: 2100, 13: 2550, 14: 3000, 15: 3400,
+};
+
+function getXpProgress(xp: number, level: number) {
+  // Mevcut level için kümülatif XP eşiği
+  let cumulative = 0;
+  for (let l = 1; l < level; l++) {
+    cumulative += XP_THRESHOLDS[l] ?? 500;
+  }
+  const currentLevelXp = xp - cumulative;
+  const needed = XP_THRESHOLDS[level] ?? 500;
+  return { current: Math.max(0, currentLevelXp), needed, percent: Math.min(100, Math.max(0, (currentLevelXp / needed) * 100)) };
+}
+
+function XpBar({ xp, level }: { xp: number; level: number }) {
+  const { current, needed, percent } = getXpProgress(xp, level);
+  return (
+    <div className="adn-xp-bar">
+      <div className="adn-xp-bar__track">
+        <div className="adn-xp-bar__fill" style={{ width: `${percent}%` }} />
+      </div>
+      <div className="adn-xp-bar__labels">
+        <span className="adn-xp-bar__lv">Lv {level}</span>
+        <span className="adn-xp-bar__val">{current.toLocaleString()} / {needed.toLocaleString()} XP</span>
+        <span className="adn-xp-bar__lv">Lv {level + 1}</span>
       </div>
     </div>
   );

@@ -300,17 +300,19 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
           ? 'Kritik vurus! Tap odulu katlandi.'
           : null
     };
-  }).then(async (txResult) => {
-    await Promise.all([
+  return result;
+}).then(async (txResult) => {
+    // Post-tap işlemleri — response'u bekletme, arka planda çalışsın
+    Promise.all([
       progressMissionsForEvent(userId, 'tap', {
         amount: Math.max(1, taps),
         coinsEarned: txResult.addedCoins,
         criticalHit: txResult.criticalHit,
         chestTier: txResult.chest?.tier || null
       }),
-      recordClanContribution(userId, txResult.addedCoins)
-    ]);
-    await markTutorialStep({ userId, step: 'firstTapDone' }).catch(() => null);
+      recordClanContribution(userId, txResult.addedCoins),
+      markTutorialStep({ userId, step: 'firstTapDone' }).catch(() => null)
+    ]).catch(() => null);
 
     // Advanced anti-cheat: arka planda risk sinyallerini değerlendir
     evaluateRiskSignals({
