@@ -1,4 +1,5 @@
 const PRODUCTION_API_URL = 'https://adntoken.onrender.com';
+const HARDCODED_ADMIN_SECRET = 'adn_admin_4c8e1a92f7b64d0d9e2c5a1b7f3e8c44_lock';
 
 function resolveApiUrl() {
   const configured = import.meta.env.VITE_API_URL?.trim();
@@ -13,18 +14,18 @@ function resolveApiUrl() {
 }
 
 const API_URL = resolveApiUrl();
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET || 'change-admin-secret';
 
 export async function adminFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('adn_airdrop_token') || '';
+  const token = sessionStorage.getItem('adn_airdrop_token') || localStorage.getItem('adn_airdrop_token') || '';
   const initData = (window as any).Telegram?.WebApp?.initData || '';
+  const adminSecret = import.meta.env.VITE_ADMIN_SECRET || HARDCODED_ADMIN_SECRET;
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
       'x-telegram-init-data': initData,
-      'x-admin-secret': ADMIN_SECRET,
+      'x-admin-secret': adminSecret,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {})
     }

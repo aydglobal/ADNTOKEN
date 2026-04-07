@@ -9,12 +9,15 @@ export enum AdminRole {
 }
 
 export function adminOnlyMiddleware(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  const adminSecret = req.header('x-admin-secret');
+
+  // Admin secret doğruysa token/isAdmin kontrolü atla
+  if (adminSecret === env.ADMIN_SECRET) {
+    return next();
   }
 
-  if (req.header('x-admin-secret') !== env.ADMIN_SECRET) {
-    return res.status(403).json({ success: false, message: 'Admin secret required' });
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
   if (!req.user.isAdmin) {
