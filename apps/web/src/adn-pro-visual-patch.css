@@ -1632,3 +1632,54 @@ body[data-low-perf="true"] .game-dock__badge {
   color: #ffd700 !important;
   box-shadow: 0 0 20px rgba(214,178,94,0.2) !important;
 }
+
+/* ===== HEADER STATS FIX — yan yana, wrap yok ===== */
+.game-header__stats {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.game-header-stat {
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 8px 10px !important;
+  gap: 6px !important;
+}
+
+.game-header-stat__value {
+  font-size: 13px !important;
+  white-space: nowrap;
+}
+
+.game-header-stat__label {
+  font-size: 10px !important;
+  white-space: nowrap;
+}
+
+.game-header {
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  align-items: center;
+}
+
+/* ===== BOTTOM NAV — padding fix ===== */
+.game-shell {
+  padding-bottom: 90px !important;
+}
+
+/* ===== BOOST SATIN ALMA — güzel konum ===== */
+.game-boost-card .game-actions {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.game-boost-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 160px;
+}

@@ -813,8 +813,7 @@ export default function App() {
               </div>
             </div>
             <HeaderStat icon="boost" label="Boost" value={activeBoosts.length ? `${activeBoosts.length}x` : '-'} />
-          </div>
-        </header>
+          </div>        </header>
 
         {/* Balance Strip */}
         <div className="adn-balance-strip">
