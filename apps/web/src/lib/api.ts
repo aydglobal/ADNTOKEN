@@ -63,14 +63,14 @@ async function fetchWithRetry(input: string, init: RequestInit, retries = 3): Pr
       // Başarılı veya son deneme
       if (response.ok || attempt === retries) return response;
 
-      // 5xx veya ağ hatası — retry
+      // 5xx — retry
       if (response.status >= 500) {
         lastError = new Error(`HTTP ${response.status}`);
         if (attempt < retries) await sleep(RETRY_DELAYS[attempt]);
         continue;
       }
 
-      // 4xx (401 hariç) — retry yapma
+      // 4xx (401, 429 dahil) — retry yapma, direkt dön
       return response;
     } catch (err) {
       if (err instanceof UnauthorizedError) throw err;

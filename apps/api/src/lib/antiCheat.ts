@@ -31,7 +31,7 @@ export function assertTapAllowed(user: {
     throw new AntiCheatError('Invalid tap nonce', 400);
   }
 
-  if (user.lastTapAt && now - user.lastTapAt.getTime() < 180) {
+  if (user.lastTapAt && now - user.lastTapAt.getTime() < 100) {
     throw new AntiCheatError('Too many taps too quickly');
   }
 

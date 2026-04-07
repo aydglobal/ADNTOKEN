@@ -430,9 +430,9 @@ export default function App() {
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
 
-    // Throttle: 120ms aralıktan daha sık tap API isteği gönderme
+    // Throttle: 200ms — API minimum 180ms, biraz marj bırak
     const now = Date.now();
-    if (now - tapThrottleRef.current < 120) return;
+    if (now - tapThrottleRef.current < 200) return;
     tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -440,9 +440,8 @@ export default function App() {
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
     const baseGain = Math.max(1, user.tapPower);
-    const isCrit = Math.random() < 0.05; // basit crit, empire calc kaldırıldı
+    const isCrit = Math.random() < 0.05;
 
-    // Sadece gold burst — crit'te pink ekle
     pushBurst(`+${fmt(baseGain)}`, x, y, 'gold');
     if (isCrit) pushBurst(`CRIT!`, x, y - 30, 'pink');
 
@@ -451,7 +450,9 @@ export default function App() {
     playHaptic('light');
     registerTap();
 
-    // Optimistic update — tek setState
+    // Optimistic update — enerji ve coin anlık azalt
+    const prevEnergy = user.energy;
+    const prevCoins = user.coins;
     setUser((prev: any) => prev ? {
       ...prev,
       coins: prev.coins + baseGain,
@@ -460,7 +461,7 @@ export default function App() {
 
     try {
       const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
-      // API sonucu — sadece kritik alanları güncelle
+      // API sonucu — kesin değerlerle güncelle
       setUser((prev: any) => prev ? {
         ...prev,
         coins: result.coins,
@@ -473,7 +474,12 @@ export default function App() {
         gameBus.emit('level_up', { level: result.level });
       }
     } catch {
-      // sessizce geç
+      // API hata verdi — optimistic update'i geri al
+      setUser((prev: any) => prev ? {
+        ...prev,
+        coins: prevCoins,
+        energy: prevEnergy,
+      } : prev);
     }
   }
 
