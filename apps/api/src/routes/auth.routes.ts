@@ -15,9 +15,21 @@ function normalizeOrigin(value: string) {
 
 function canUsePreviewFromRequest(origin?: string | null) {
   if (env.ENABLE_PREVIEW_MODE === 'true') return true;
-  if (!origin) return false;
+
+  // Server-to-server veya origin yok → izin ver
+  if (!origin) return true;
 
   try {
+    const originUrl = new URL(origin);
+    const hostname = originUrl.hostname;
+
+    // Localhost her zaman izin verilir
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+
+    // Vercel preview ve production deploy'ları
+    if (hostname.endsWith('.vercel.app')) return true;
+
+    // MINIAPP_URL ile eşleşen origin
     return normalizeOrigin(origin) === normalizeOrigin(new URL(env.MINIAPP_URL).origin);
   } catch {
     return false;

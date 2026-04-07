@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
-import { postJSON } from '../lib/api';
+import { getJSON, postJSON } from '../lib/api';
 import { bootTelegramUI, getInitData, getStartParam, getTelegramWebApp } from '../lib/telegram';
 
 const fpPromise = FingerprintJS.load();
@@ -75,39 +75,55 @@ export function useAuth() {
 
   useEffect(() => {
     const saved = sessionStorage.getItem('adn_airdrop_token');
-    if (saved) setToken(saved);
-
     const platform = navigator.platform || 'web';
 
-    Promise.all([waitForInitData(), getFingerprint()])
-      .then(([initData, fingerprint]) => {
-        if (!initData) {
-          setIsTelegramAvailable(false);
-          return loginWithPreview(setToken, setUser).catch((previewError) => {
-            setError('Preview oturumu baslatilamadi. API baglantisini ve ENABLE_PREVIEW_MODE ayarini kontrol et.');
-            throw previewError;
-          });
-        }
-
-        return postJSON<{ token: string; user: any }>('/auth/telegram', {
-          initData,
-          referralCode: getStartParam() || undefined,
-          fingerprint,
-          platform
-        })
-          .then((data) => {
-            sessionStorage.setItem('adn_airdrop_token', data.token);
-            setToken(data.token);
-            setUser(data.user);
+    // Saved token varsa önce /api/me ile user'ı yükle, sonra yeniden auth yap
+    const tryRestoreSession = saved
+      ? getJSON<any>('/api/me', saved)
+          .then((profile) => {
+            setToken(saved);
+            setUser(profile);
+            return true; // restored
           })
-          .catch((telegramError) => {
-            setIsTelegramAvailable(true);
-            setError(`Telegram oturumu kurulamadi. ${String(telegramError)}`);
-            throw telegramError;
-          });
-      })
-      .catch((err) => setError(String(err)))
-      .finally(() => setLoading(false));
+          .catch(() => false) // token expired, re-auth
+      : Promise.resolve(false);
+
+    tryRestoreSession.then((restored) => {
+      if (restored) {
+        setLoading(false);
+        return;
+      }
+
+      Promise.all([waitForInitData(), getFingerprint()])
+        .then(([initData, fingerprint]) => {
+          if (!initData) {
+            setIsTelegramAvailable(false);
+            return loginWithPreview(setToken, setUser).catch((previewError) => {
+              setError('Preview oturumu baslatilamadi. API baglantisini kontrol et.');
+              throw previewError;
+            });
+          }
+
+          return postJSON<{ token: string; user: any }>('/auth/telegram', {
+            initData,
+            referralCode: getStartParam() || undefined,
+            fingerprint,
+            platform
+          })
+            .then((data) => {
+              sessionStorage.setItem('adn_airdrop_token', data.token);
+              setToken(data.token);
+              setUser(data.user);
+            })
+            .catch((telegramError) => {
+              setIsTelegramAvailable(true);
+              setError(`Telegram oturumu kurulamadi. ${String(telegramError)}`);
+              throw telegramError;
+            });
+        })
+        .catch((err) => setError(String(err)))
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   return { token, user, setUser, loading, error, isTelegramAvailable };
