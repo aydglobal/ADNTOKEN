@@ -156,8 +156,13 @@ body[data-low-perf="true"] .game-dock__badge {
 }
 
 .game-hero {
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr;
   gap: 16px;
+}
+
+.game-hero__intro {
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
 
 .game-hero__headline {
@@ -173,8 +178,9 @@ body[data-low-perf="true"] .game-dock__badge {
 }
 
 .game-hero__title {
-  font-size: clamp(1.9rem, 3vw, 2.7rem);
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
   line-height: 0.95;
+  word-break: break-word;
 }
 
 .game-ticker {
@@ -188,6 +194,23 @@ body[data-low-perf="true"] .game-dock__badge {
 
 .game-signal-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.game-signal-card__value {
+  font-size: clamp(14px, 2vw, 22px);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.game-signal-card__note {
+  font-size: 11px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .game-signal-card,
@@ -384,5 +407,21 @@ body[data-low-perf="true"] .game-dock__badge {
   .game-dock {
     border-radius: 24px;
     bottom: 10px;
+  }
+
+  .game-signal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-hero__intro {
+    grid-template-columns: 1fr;
+  }
+
+  .game-hero__title {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+
+  .game-signal-card__value {
+    font-size: clamp(13px, 4vw, 18px);
   }
 }

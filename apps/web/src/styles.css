@@ -2014,11 +2014,12 @@ textarea {
 
 .game-loading__token-wrap {
   position: absolute;
-  top: 8%;
+  top: 6%;
   right: 4%;
+  z-index: 10;
   display: grid;
   place-items: center;
-  width: 148px;
+  width: 120px;
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04) 58%, rgba(255, 255, 255, 0.02) 76%);
