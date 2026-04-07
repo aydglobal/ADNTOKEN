@@ -486,11 +486,16 @@ export default function App() {
     pushRipple(x, y);
     if (isCrit) {
       pushBurst(`CRIT x${empireStats.critMultiplier.toFixed(1)}`, x, y, 'pink');
+      pushBurst(`⚡`, x + 20, y - 20, 'violet');
     }
     pushBurst(`+${fmt(Math.round(empireGain))}`, x, y, 'gold');
+    // Combo milestone görsel
+    if (comboCount > 0 && comboCount % 10 === 0) {
+      pushBurst(`🔥 x${comboCount} COMBO`, x, y - 40, 'cyan');
+    }
     triggerImpact('tap');
     playSoftClick();
-    playHaptic('light');
+    playHaptic(isCrit ? 'medium' : 'light');
     registerTap();
 
     // Optimistic update

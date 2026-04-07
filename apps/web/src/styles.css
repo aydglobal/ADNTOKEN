@@ -3430,3 +3430,102 @@ label {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== ADN ULTRA PACK — Visual Polish ===== */
+
+/* Tap orb — daha güçlü glow ve pulse */
+.game-tapper__button {
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.game-tapper__button:not(:disabled):active {
+  transform: scale(0.94);
+  box-shadow: 0 0 80px rgba(56,189,248,0.55), 0 0 140px rgba(255,209,102,0.3) !important;
+}
+
+.game-tapper__spotlight {
+  transition: box-shadow 0.15s ease;
+}
+
+/* Tap float text — daha büyük ve parlak */
+.game-tapper__float {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 16px currentColor, 0 2px 8px rgba(0,0,0,0.5);
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.game-tapper__float--gold {
+  color: #ffe566 !important;
+  text-shadow: 0 0 20px rgba(255,229,102,0.9), 0 0 40px rgba(255,200,0,0.5);
+}
+
+.game-tapper__float--pink {
+  color: #ff6ef0 !important;
+  text-shadow: 0 0 20px rgba(255,110,240,0.9);
+}
+
+/* Ripple — daha belirgin */
+.game-tapper__ripple {
+  border: 2px solid rgba(56,189,248,0.7) !important;
+  box-shadow: 0 0 12px rgba(56,189,248,0.4);
+}
+
+/* Halo — daha canlı */
+.game-tapper__halo {
+  background: radial-gradient(circle, rgba(56,189,248,0.22), rgba(56,189,248,0.08) 54%, transparent 78%) !important;
+  animation: gameHaloPulse 2.4s ease-in-out infinite !important;
+}
+
+/* Energy bar — daha parlak */
+.game-energy-bar__fill {
+  background: linear-gradient(90deg, #38bdf8, #67e8f9, #38bdf8) !important;
+  background-size: 200% 100% !important;
+  animation: gameShimmer 2s linear infinite !important;
+  box-shadow: 0 0 12px rgba(56,189,248,0.6) !important;
+}
+
+.game-energy-bar--full .game-energy-bar__fill {
+  background: linear-gradient(90deg, #ffd700, #ffec6e, #ffd700) !important;
+  background-size: 200% 100% !important;
+  box-shadow: 0 0 16px rgba(255,215,0,0.7) !important;
+}
+
+.game-energy-bar--danger .game-energy-bar__fill {
+  background: linear-gradient(90deg, #ff3c00, #ff7a00) !important;
+  box-shadow: 0 0 12px rgba(255,60,0,0.6) !important;
+  animation: pulse 0.8s ease-in-out infinite !important;
+}
+
+/* Chest reveal — daha dramatik */
+.chest-reveal-card {
+  box-shadow: 0 0 60px rgba(214,178,94,0.4), 0 0 120px rgba(214,178,94,0.15) !important;
+}
+
+/* Reward burst — daha büyük */
+.game-reward-burst {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 20px currentColor;
+}
+
+/* Core particles — daha parlak */
+.game-core-particle {
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor !important;
+  opacity: 0.9 !important;
+}
+
+/* Panel hover glow */
+.game-signal-card:hover,
+.game-hero-stat:hover {
+  box-shadow: 0 0 18px rgba(56,189,248,0.2), var(--shadow-card) !important;
+  border-color: rgba(56,189,248,0.25) !important;
+}
+
+/* Button active state */
+.game-button:active,
+.adn-btn:active {
+  transform: scale(0.97) !important;
+  filter: brightness(1.1);
+}
