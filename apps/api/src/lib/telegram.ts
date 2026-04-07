@@ -72,7 +72,7 @@ export async function startTelegramBot() {
     return {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🚀 Oyunu Aç', web_app: { url: WEBAPP_URL } }],
+          [{ text: '🚀 ▸ ARENA\'YI AÇ', web_app: { url: WEBAPP_URL } }],
           [
             { text: '👤 Profil', callback_data: 'profile' },
             { text: '💰 Bakiye', callback_data: 'balance' }
@@ -81,7 +81,11 @@ export async function startTelegramBot() {
             { text: '🎯 Görevler', callback_data: 'missions' },
             { text: '👥 Referans', callback_data: 'referral' }
           ],
-          [{ text: '⚙️ Ayarlar', callback_data: 'settings' }],
+          [
+            { text: '🎁 Günlük Ödül', callback_data: 'daily' },
+            { text: '⚙️ Ayarlar', callback_data: 'settings' }
+          ],
+          [{ text: '📊 Liderlik', callback_data: 'leaderboard' }],
         ]
       }
     };
@@ -91,8 +95,8 @@ export async function startTelegramBot() {
     return {
       reply_markup: {
         inline_keyboard: [
+          [{ text: '🚀 ▸ ARENA\'YI AÇ', web_app: { url: WEBAPP_URL } }],
           [{ text: '⬅️ Ana Menü', callback_data: 'menu' }],
-          [{ text: '🚀 Oyunu Aç', web_app: { url: WEBAPP_URL } }],
         ]
       }
     };
@@ -100,7 +104,24 @@ export async function startTelegramBot() {
 
   bot.start(async (ctx) => {
     const firstName = ctx.from?.first_name || 'Operatif';
-    const text = `🔥 *ADN Token*\n\nHoş geldin, *${firstName}!*\nADN Arena'ya hoş geldin.\n\n• ⚡ Tap yap → ADN kazan\n• 🎯 Görevleri tamamla\n• 👥 Arkadaş davet et, bonus kazan\n• 🏆 Liderlik tablosunda yüksel`;
+    const text = [
+      `⚡ *ADN TOKEN — ARENA CORE*`,
+      ``,
+      `╔══════════════════════╗`,
+      `║  Hoş geldin, *${firstName}*  `,
+      `╚══════════════════════╝`,
+      ``,
+      `🦁 *Lion sahaya indi. Sistem aktif.*`,
+      ``,
+      `▸ 💎 Tap yap → ADN kazan`,
+      `▸ 🎯 Görevleri tamamla → XP kazan`,
+      `▸ 👥 Referans ver → Bonus al`,
+      `▸ 🏆 Liderliğe yüksel`,
+      ``,
+      `━━━━━━━━━━━━━━━━━━━━━━`,
+      `🔋 *Enerji sistemi aktif* | 🌐 *Live Ops açık*`,
+      `━━━━━━━━━━━━━━━━━━━━━━`,
+    ].join('\n');
     await ctx.reply(text, { parse_mode: 'Markdown', ...mainMenu() });
   });
 
@@ -115,29 +136,60 @@ export async function startTelegramBot() {
 
   bot.action('profile', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.reply('👤 *Profil*\n\nSeviye: *4*\nLig: *Silver*\nEnerji: *590/590*\n\nGüncel veriler için oyunu aç.', { parse_mode: 'Markdown', ...backMenu() });
+    await ctx.reply(
+      `👤 *PROFIL KARTI*\n\n━━━━━━━━━━━━━━━\n🎖 Seviye: *4*\n🏅 Lig: *Silver*\n⚡ Enerji: *590/590*\n🔥 Günlük seri: *3 gün*\n━━━━━━━━━━━━━━━\n\n_Güncel veriler için Arena'yı aç._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
   });
 
   bot.action('balance', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.reply('💰 *Bakiye*\n\nToplam ADN: *2.4K*\nSaatlik üretim: *192/s*\n\nGüncel bakiye için oyunu aç.', { parse_mode: 'Markdown', ...backMenu() });
+    await ctx.reply(
+      `💰 *BAKİYE PANELİ*\n\n━━━━━━━━━━━━━━━\n💎 Toplam ADN: *2.4K*\n📈 Saatlik üretim: *192/s*\n⚡ Boost: *Hazır*\n━━━━━━━━━━━━━━━\n\n_Güncel bakiye için Arena'yı aç._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
   });
 
   bot.action('missions', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.reply('🎯 *Görevler*\n\n✅ Günlük giriş\n⬜ 25 tap yap\n⬜ 1 upgrade al\n\nOyun içinden tamamla.', { parse_mode: 'Markdown', ...backMenu() });
+    await ctx.reply(
+      `🎯 *GÖREV MERKEZİ*\n\n━━━━━━━━━━━━━━━\n✅ Günlük giriş\n⬜ 25 tap yap\n⬜ 1 upgrade al\n━━━━━━━━━━━━━━━\n📊 Tamamlanan: *1/3*\n🏆 Ödül: *350 ADN + enerji*\n\n_Görevleri Arena içinden tamamla._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
   });
 
   bot.action('referral', async (ctx) => {
     await ctx.answerCbQuery();
     const me = await bot.telegram.getMe();
     const link = `https://t.me/${me.username}?start=ref_adn`;
-    await ctx.reply(`👥 *Referans Merkezi*\n\nDavet bağlantın:\n\`${link}\``, { parse_mode: 'Markdown', ...backMenu() });
+    await ctx.reply(
+      `👥 *REFERANS MERKEZİ*\n\n━━━━━━━━━━━━━━━\n🔗 Davet bağlantın:\n\`${link}\`\n━━━━━━━━━━━━━━━\n💎 Her davet = bonus ADN\n⚡ Aktif referans = pasif gelir`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
+  });
+
+  bot.action('daily', async (ctx) => {
+    await ctx.answerCbQuery('🎁 Günlük ödül!');
+    await ctx.reply(
+      `🎁 *GÜNLÜK ÖDÜL*\n\n━━━━━━━━━━━━━━━\n💎 +250 ADN eklendi\n🔥 Seri devam ediyor!\n━━━━━━━━━━━━━━━\n\n_Daha fazla ödül için Arena'yı aç._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
+  });
+
+  bot.action('leaderboard', async (ctx) => {
+    await ctx.answerCbQuery();
+    await ctx.reply(
+      `📊 *LİDERLİK TABLOSU*\n\n━━━━━━━━━━━━━━━\n🥇 ADN Preview User\n🥈 Turbo Miner\n🥉 Lion Core\n━━━━━━━━━━━━━━━\n\n_Üste çıkmak için tap ve görevleri artır._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
   });
 
   bot.action('settings', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.reply('⚙️ *Ayarlar*\n\nAyarlar mini app içinden yönetilir.', { parse_mode: 'Markdown', ...backMenu() });
+    await ctx.reply(
+      `⚙️ *AYARLAR*\n\n━━━━━━━━━━━━━━━\n• Bildirimler\n• WebApp açılış\n• Destek\n━━━━━━━━━━━━━━━\n\n_Ayarlar Arena içinden yönetilir._`,
+      { parse_mode: 'Markdown', ...backMenu() }
+    );
   });
 
   // Webhook'u temizle, polling başlat
