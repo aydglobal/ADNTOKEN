@@ -2,7 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { Context, Input, Markup, Telegraf } from 'telegraf';
+import { Context, Input, Telegraf } from 'telegraf';
 
 const BOT_TOKEN = requireEnv('BOT_TOKEN');
 const WEBAPP_URL = requireEnv('MINIAPP_URL');
@@ -18,19 +18,33 @@ const bot = new Telegraf(BOT_TOKEN);
 
 // ── Inline keyboard'lar ────────────────────────────────────────────────────────
 function mainMenu() {
-  return Markup.inlineKeyboard([
-    [Markup.button.webApp('🚀 Oyunu Aç', WEBAPP_URL)],
-    [Markup.button.callback('👤 Profil', 'profile'), Markup.button.callback('💰 Bakiye', 'balance')],
-    [Markup.button.callback('🎯 Görevler', 'missions'), Markup.button.callback('👥 Referans', 'referral')],
-    [Markup.button.callback('⚙️ Ayarlar', 'settings')],
-  ]);
+  return {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🚀 Oyunu Aç', web_app: { url: WEBAPP_URL } }],
+        [
+          { text: '👤 Profil', callback_data: 'profile' },
+          { text: '💰 Bakiye', callback_data: 'balance' }
+        ],
+        [
+          { text: '🎯 Görevler', callback_data: 'missions' },
+          { text: '👥 Referans', callback_data: 'referral' }
+        ],
+        [{ text: '⚙️ Ayarlar', callback_data: 'settings' }],
+      ]
+    }
+  };
 }
 
 function backMenu() {
-  return Markup.inlineKeyboard([
-    [Markup.button.callback('⬅️ Ana Menü', 'menu')],
-    [Markup.button.webApp('🚀 Oyunu Aç', WEBAPP_URL)],
-  ]);
+  return {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '⬅️ Ana Menü', callback_data: 'menu' }],
+        [{ text: '🚀 Oyunu Aç', web_app: { url: WEBAPP_URL } }],
+      ]
+    }
+  };
 }
 
 // ── /start ─────────────────────────────────────────────────────────────────────
@@ -141,9 +155,17 @@ bot.on('text', async (ctx) => {
   const text = ctx.message.text.toLowerCase();
   if (text.startsWith('/')) return;
   if (text.includes('oyun') || text.includes('app')) {
-    await ctx.reply('Oyunu açmak için:', Markup.inlineKeyboard([[Markup.button.webApp('🚀 Oyunu Aç', WEBAPP_URL)]]));
+    await ctx.reply('Oyunu açmak için:', {
+      reply_markup: {
+        inline_keyboard: [[{ text: '🚀 Oyunu Aç', web_app: { url: WEBAPP_URL } }]]
+      }
+    });
   } else if (text.includes('görev')) {
-    await ctx.reply('Görevler:', Markup.inlineKeyboard([[Markup.button.callback('🎯 Görevler', 'missions')]]));
+    await ctx.reply('Görevler:', {
+      reply_markup: {
+        inline_keyboard: [[{ text: '🎯 Görevler', callback_data: 'missions' }]]
+      }
+    });
   }
 });
 
