@@ -7,6 +7,27 @@ import { writeEconomyEvent } from './economyLedger.service';
 
 const DEFAULT_REFERRAL_REWARD = 500;
 
+// Phase 3 — Referral milestone kademeleri
+export const REFERRAL_MILESTONES = [
+  { count: 1,  reward: 'chest',        label: 'İlk Bağlantı',    description: '1 referral → Common Chest' },
+  { count: 3,  reward: 'premium_badge', label: 'Ağ Kurucusu',    description: '3 referral → Premium Badge' },
+  { count: 5,  reward: 'boost_slot',   label: 'Sinyal Yayıcı',   description: '5 referral → Boost Slot' },
+  { count: 10, reward: 'elite_key',    label: 'Elite Operatör',  description: '10 referral → Elite Vault Key' },
+  { count: 20, reward: 'season_title', label: 'Syndicate Lideri', description: '20 referral → Season Title' },
+] as const;
+
+export type ReferralMilestone = typeof REFERRAL_MILESTONES[number];
+
+/** Aktif referral sayısına göre kazanılan milestone'ları döner */
+export function getEarnedMilestones(activeReferrals: number): ReferralMilestone[] {
+  return REFERRAL_MILESTONES.filter((m) => activeReferrals >= m.count);
+}
+
+/** Bir sonraki milestone'u döner */
+export function getNextMilestone(activeReferrals: number): ReferralMilestone | null {
+  return REFERRAL_MILESTONES.find((m) => activeReferrals < m.count) ?? null;
+}
+
 export async function ensureReferralEdgeForUser(
   inviteeUserId: string,
   referralCode: string,
@@ -187,6 +208,10 @@ export async function getReferralOverview(userId: string) {
       referralCount: totals.total
     }),
     totals,
+    milestones: {
+      earned: getEarnedMilestones(totals.active),
+      next: getNextMilestone(totals.active),
+    },
     invites: user.referralsSent.map((item) => ({
       id: item.invitee.id,
       displayName: item.invitee.displayName,

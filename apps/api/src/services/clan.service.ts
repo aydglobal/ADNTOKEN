@@ -1,6 +1,28 @@
 import { prisma } from '../lib/prisma';
 import { computeContributionTier } from './clanCompetition.service';
 
+// Phase 3 — Clan season ödülleri
+export const CLAN_SEASON_REWARDS = [
+  { rank: 1, reward: 'legendary_chest_x3 + season_banner + 5000_ADN', label: '🥇 Şampiyon' },
+  { rank: 2, reward: 'epic_chest_x2 + 2500_ADN',                      label: '🥈 Finalist' },
+  { rank: 3, reward: 'rare_chest_x2 + 1200_ADN',                      label: '🥉 Yarı Final' },
+] as const;
+
+/** Haftalık clan skor sıralamasını döner */
+export async function getWeeklyClanLeaderboard(limit = 10) {
+  return prisma.clan.findMany({
+    take: limit,
+    orderBy: { totalScore: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      totalScore: true,
+      _count: { select: { members: true } }
+    }
+  });
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
