@@ -40,6 +40,7 @@ import OnboardingOverlay from '../components/OnboardingOverlay';
 import ChestRevealSequence from '../components/ChestRevealSequence';
 import { ScreenTransition, TapMotionButton, MotionCard, ChestRevealMotion } from '../components/MotionPack';
 import FeedbackSettingsCard from '../components/FeedbackSettingsCard';
+import AdnOpeningScreen from '../components/AdnOpeningScreen';
 
 type TabKey = 'mine' | 'boosts' | 'tasks' | 'wallet' | 'social' | 'settings';
 
@@ -143,6 +144,7 @@ function isStreakMilestone(streak: number): boolean {
 export default function App() {
   const { token, user: authUser, setUser, loading, error, isTelegramAvailable } = useAuth();
   const user = authUser as PlayerProfile | null;
+  const [showOpening, setShowOpening] = useState(true);
 
   useFeedbackLayer();
 
@@ -675,6 +677,10 @@ export default function App() {
       window.setTimeout(() => setRebootReveal(''), 2200);
       setBusyKey(null);
     }
+  }
+
+  if (showOpening) {
+    return <AdnOpeningScreen onEnter={() => setShowOpening(false)} />;
   }
 
   if (error && !token && !user) {
