@@ -213,7 +213,9 @@ app.use('/admin/campaigns', authMiddleware, adminOnlyMiddleware, adminCampaignsR
 app.use('/admin/corrections', authMiddleware, adminOnlyMiddleware, adminCorrectionsRoutes);
 app.use('/admin/revenue', authMiddleware, adminOnlyMiddleware, adminRevenueRoutes);
 app.use('/admin/notifications', authMiddleware, adminOnlyMiddleware, adminNotificationsRoutes);
-app.use('/admin/ab-tests', authMiddleware, adminOnlyMiddleware, adminAbTestRoutes); authMiddleware, adminOnlyMiddleware, adminDashboardRoutes);
+app.use('/admin/ab-tests', authMiddleware, adminOnlyMiddleware, adminAbTestRoutes);
+
+app.use('/api/admin/dashboard', authMiddleware, adminOnlyMiddleware, adminDashboardRoutes);
 app.use('/api/admin/users', authMiddleware, adminOnlyMiddleware, adminUsersRoutes);
 app.use('/api/admin/fraud', authMiddleware, adminOnlyMiddleware, adminFraudRoutes);
 app.use('/api/admin/logs', authMiddleware, adminOnlyMiddleware, adminLogsRoutes);
