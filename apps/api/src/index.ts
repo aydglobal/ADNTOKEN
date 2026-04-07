@@ -244,30 +244,6 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   });
 });
 
-app.listen(Number(env.PORT), '0.0.0.0', () => {
-  logger.info({ port: env.PORT }, 'server_started');
-
-  // Notification worker — her 10 dakikada bir
-  setInterval(() => {
-    runNotificationWorker().catch((err) => logger.error({ err }, 'notification_worker_error'));
-  }, 10 * 60 * 1000);
-
-  // Analytics daily job — her gün UTC 00:05'te
-  const scheduleAnalyticsJob = () => {
-    const now = new Date();
-    const nextRun = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 5, 0));
-    const msUntilNextRun = nextRun.getTime() - now.getTime();
-    setTimeout(() => {
-      runAnalyticsDailyJob().catch((err) => logger.error({ err }, 'analytics_daily_job_error'));
-      setInterval(() => {
-        runAnalyticsDailyJob().catch((err) => logger.error({ err }, 'analytics_daily_job_error'));
-      }, 24 * 60 * 60 * 1000);
-    }, msUntilNextRun);
-    logger.info({ msUntilNextRun }, 'analytics_job_scheduled');
-  };
-  scheduleAnalyticsJob();
-});
-
 // Graceful shutdown — SIGTERM'de mevcut istekler tamamlanır
 const server = app.listen(Number(env.PORT), '0.0.0.0', () => {
   logger.info({ port: env.PORT }, 'server_started');
