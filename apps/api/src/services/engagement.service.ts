@@ -1,4 +1,7 @@
 import { getLiveTuningConfig } from './adminConfig.service';
+import { comboMultiplierFor } from '../engines/comboEngine';
+import { prestigeBuff } from '../engines/prestigeEngine';
+import { economyConfig } from '../config/economyConfig';
 
 type ChestTier = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
@@ -15,7 +18,9 @@ const CHEST_REWARDS: Record<ChestTier, number> = {
 };
 
 export function calculatePrestigeBonus(level: number) {
-  return Number((1 + Math.max(0, level) * 0.02).toFixed(2));
+  // Phase 2: prestige buff'ı engine'den al
+  const buff = prestigeBuff(Math.max(0, level - 15));
+  return Number(Math.max(1, buff.globalEarnMultiplier).toFixed(2));
 }
 
 export function calculatePermanentMetaBonus(meta: {
@@ -36,13 +41,15 @@ export function calculatePermanentMetaBonus(meta: {
 }
 
 export function calculateComboMultiplier(totalWindowTaps: number) {
-  const bonus = Math.min(0.45, Math.max(0, totalWindowTaps - 1) * 0.015);
-  return Number((1 + bonus).toFixed(2));
+  // Phase 2: comboEngine'den al
+  return Number(comboMultiplierFor(totalWindowTaps).toFixed(2));
 }
 
 export function calculateCritChance(level: number) {
   const tuning = getLiveTuningConfig();
-  return Number(Math.min(0.24, tuning.tap.critChance + Math.max(0, level - 1) * 0.0025).toFixed(4));
+  // Phase 2: base crit chance economyConfig'den
+  const base = tuning.tap.critChance ?? economyConfig.critChance;
+  return Number(Math.min(0.24, base + Math.max(0, level - 1) * 0.0025).toFixed(4));
 }
 
 export function calculateChestChance(level: number) {
@@ -60,8 +67,9 @@ export function calculateTapReward(
 ) {
   const tuning = getLiveTuningConfig();
   const prestigeBonus = options?.prestigeBonus ?? 1;
-  const critChance = options?.critChance ?? tuning.tap.critChance ?? BASE_CRIT_CHANCE;
-  const critMultiplier = options?.critMultiplier ?? tuning.tap.critMultiplier ?? BASE_CRIT_MULTIPLIER;
+  // Phase 2: crit değerleri economyConfig'den
+  const critChance = options?.critChance ?? tuning.tap.critChance ?? economyConfig.critChance;
+  const critMultiplier = options?.critMultiplier ?? tuning.tap.critMultiplier ?? economyConfig.critMultiplier;
   const comboMultiplier = options?.comboMultiplier ?? 1;
   const criticalHit = Math.random() < critChance;
   const appliedCritMultiplier = criticalHit ? critMultiplier : 1;

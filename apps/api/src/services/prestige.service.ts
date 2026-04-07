@@ -1,19 +1,28 @@
 import { prisma } from '../lib/prisma';
 import { calculatePermanentMetaBonus } from './engagement.service';
+import { prestigePointsFor, prestigeBuff, canPrestige as engineCanPrestige } from '../engines/prestigeEngine';
+import { economyConfig } from '../config/economyConfig';
 
 function canPrestige(params: {
   level: number;
   passiveIncomePerHour: number;
   totalLifetimeEarned: number;
 }) {
-  return params.level >= 20 && params.passiveIncomePerHour >= 5000 && params.totalLifetimeEarned >= 250000;
+  // Phase 2: engine'den kontrol et
+  return engineCanPrestige({
+    level: params.level,
+    totalLifetimeEarned: params.totalLifetimeEarned,
+    prestigeUnlockLevel: economyConfig.prestigeUnlockLevel
+  });
 }
 
-function computePrestigeRewards(totalLifetimeEarned: number) {
-  const prestigePower = Math.floor(Math.sqrt(totalLifetimeEarned / 100000));
+function computePrestigeRewards(totalLifetimeEarned: number, highestLevel: number) {
+  const prestigePower = prestigePointsFor(totalLifetimeEarned, highestLevel);
+  const buff = prestigeBuff(prestigePower);
   return {
-    prestigePower,
-    nebulaCoreGranted: 3 + prestigePower
+    prestigePower: Math.max(1, prestigePower),
+    nebulaCoreGranted: 3 + prestigePower,
+    buff
   };
 }
 
@@ -24,7 +33,7 @@ export async function getPrestigeStatus(userId: string) {
   if (!user) throw new Error('User not found');
 
   const totalLifetimeEarned = user.totalLifetimeCoins + user.totalPassiveClaimed + user.referralRewardsGiven;
-  const rewards = computePrestigeRewards(totalLifetimeEarned);
+  const rewards = computePrestigeRewards(totalLifetimeEarned, user.level);
   const metaBonus = calculatePermanentMetaBonus({
     prestigePower: user.prestigePower,
     tapMastery: user.metaTapMastery,
@@ -64,7 +73,7 @@ export async function activatePrestige(userId: string) {
     where: { id: userId }
   });
 
-  const rewards = computePrestigeRewards(status.totalLifetimeEarned);
+  const rewards = computePrestigeRewards(status.totalLifetimeEarned, user.level);
 
   await prisma.$transaction(async (tx) => {
     await tx.userUpgrade.deleteMany({ where: { userId } });
