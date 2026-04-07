@@ -42,6 +42,8 @@ import { ScreenTransition, TapMotionButton, MotionCard, ChestRevealMotion } from
 import FeedbackSettingsCard from '../components/FeedbackSettingsCard';
 import AdnOpeningScreen from '../components/AdnOpeningScreen';
 import { calcEmpireStats } from '../hooks/useEmpireEngine';
+import { useMissionEngine } from '../game/missions/useMissionEngine';
+import MissionDrawerMobile from '../components/missions/MissionDrawerMobile';
 
 type TabKey = 'mine' | 'boosts' | 'tasks' | 'wallet' | 'social' | 'settings';
 
@@ -146,10 +148,32 @@ export default function App() {
   const { token, user: authUser, setUser, loading, error, isTelegramAvailable } = useAuth();
   const user = authUser as PlayerProfile | null;
   const [showOpening, setShowOpening] = useState(true);
+  const [missionDrawerOpen, setMissionDrawerOpen] = useState(false);
 
   useFeedbackLayer();
 
   const { comboCount, comboMultiplier, isActive: isComboActive, registerTap } = useComboEngine();
+
+  // Mission Engine V2
+  const missionStats = {
+    taps: user?.taps ?? 0,
+    coinsEarned: user?.coins ?? 0,
+    comboBest: comboCount,
+    criticalHits: 0,
+    upgradesBought: 0,
+    chestsOpened: 0,
+    idleCollected: 0,
+    premiumSpent: 0,
+    prestigeCount: (user as any)?.prestigePower ?? 0,
+    referrals: 0,
+  };
+  const { activeDaily, completedCount, claimedCount, claimMission: claimMissionV2 } = useMissionEngine({
+    level: user?.level ?? 1,
+    prestige: (user as any)?.prestigePower ?? 0,
+    vipLevel: 0,
+    eventActive: false,
+    stats: missionStats,
+  });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
@@ -704,7 +728,21 @@ export default function App() {
   }
 
   if (showOpening) {
-    return <AdnOpeningScreen onEnter={() => setShowOpening(false)} />;
+    return (
+      <AdnOpeningScreen
+        balance={user?.coins ?? 0}
+        level={user?.level ?? 1}
+        combo={comboCount}
+        dailyRewardAmount={daily?.reward ?? 2400}
+        dailyRewardProgress={daily?.canClaim ? 100 : ((daily?.streakDay ?? 0) / 7) * 100}
+        nextUnlockTitle={activeDaily?.title ?? "Vault Tier I"}
+        nextUnlockRemaining={Math.max(0, (activeDaily?.target ?? 4) - (activeDaily?.progress ?? 0))}
+        heroImage={lionImage}
+        onEnterGame={() => setShowOpening(false)}
+        onOpenLitepaper={() => window.open("https://adntoken.io/litepaper", "_blank")}
+        onClaimDaily={() => { setShowOpening(false); setActiveTab("earn"); }}
+      />
+    );
   }
 
   if (error && !token && !user) {
@@ -901,6 +939,7 @@ export default function App() {
               onDailyClaim={handleDailyClaim}
               onAirdropTask={handleAirdropTask}
               onMissionClaim={handleMissionClaim}
+              onOpenMissions={() => setMissionDrawerOpen(true)}
             />
           ) : null}
 
@@ -981,6 +1020,15 @@ export default function App() {
         />
       </div>
       <OnboardingOverlay step={onboardingStep} onNext={handleOnboardingNext} />
+      <MissionDrawerMobile
+        open={missionDrawerOpen}
+        missions={activeDaily}
+        onClose={() => setMissionDrawerOpen(false)}
+        onClaim={(missionId) => {
+          claimMissionV2(missionId);
+          setMissionDrawerOpen(false);
+        }}
+      />
       {chestReveal ? (
         <ChestRevealMotion
           open={Boolean(chestReveal)}
@@ -1651,7 +1699,8 @@ function TasksSection({
   highlightedMission,
   onDailyClaim,
   onAirdropTask,
-  onMissionClaim
+  onMissionClaim,
+  onOpenMissions
 }: {
   daily: DailyState | null;
   user: PlayerProfile;
@@ -1662,6 +1711,7 @@ function TasksSection({
   onDailyClaim: () => Promise<void>;
   onAirdropTask: (code: string) => Promise<void>;
   onMissionClaim: (mission: MissionItem) => Promise<void>;
+  onOpenMissions?: () => void;
 }) {
   return (
     <>
@@ -1672,9 +1722,16 @@ function TasksSection({
             <h3 className="game-section__title">Mission Engine</h3>
             <p className="game-section__description">Checklist hissi yerine canli progress, pulse ve claim odagi.</p>
           </div>
-          <button className="game-button" disabled={!daily?.canClaim || Boolean(busyKey)} onClick={onDailyClaim}>
-            {busyKey === 'daily' ? 'Isleniyor...' : daily?.canClaim ? 'Gunluk odulu al' : 'Gunluk bekliyor'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {onOpenMissions && (
+              <button className="game-button game-button--soft" onClick={onOpenMissions}>
+                Gunluk Gorevler
+              </button>
+            )}
+            <button className="game-button" disabled={!daily?.canClaim || Boolean(busyKey)} onClick={onDailyClaim}>
+              {busyKey === 'daily' ? 'Isleniyor...' : daily?.canClaim ? 'Gunluk odulu al' : 'Gunluk bekliyor'}
+            </button>
+          </div>
         </div>
 
         <MotionCard className={`game-daily-card game-daily-card--gold${daily?.canClaim ? ' game-daily-card--claimable' : ''}`} active={daily?.canClaim === true}>
