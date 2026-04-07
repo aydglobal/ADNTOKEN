@@ -3,8 +3,8 @@ services:
     name: adn-bot
     runtime: node
     rootDir: apps/bot
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: npm install
+    startCommand: npx tsx src/index.ts
     envVars:
       - key: BOT_TOKEN
         sync: false
