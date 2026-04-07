@@ -3261,3 +3261,97 @@ body[data-low-perf="true"] .game-core-particle {
     animation: none !important;
   }
 }
+
+
+/* ── ADN Phase 1 UI + Motion Pack ─────────────────────────────────────────── */
+
+:root {
+  --adn-bg-0: #07111F;
+  --adn-bg-1: #0A1630;
+  --adn-bg-2: #102246;
+  --adn-gold: #FFD166;
+  --adn-cyan: #4DE2FF;
+  --adn-pink: #FF5EA8;
+  --adn-mint: #68F6C8;
+  --adn-text: #F4F8FF;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(77,226,255,0.08), transparent 26%),
+    radial-gradient(circle at 80% 20%, rgba(255,94,168,0.08), transparent 18%),
+    linear-gradient(180deg, var(--adn-bg-0) 0%, var(--adn-bg-1) 42%, var(--adn-bg-2) 100%);
+}
+
+/* Premium CTA button */
+.adn-premium-btn {
+  border-radius: 18px;
+  background: linear-gradient(135deg, #FFD166 0%, #FFB347 100%);
+  color: #09101E;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(255,209,102,0.28);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.adn-premium-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 12px 28px rgba(255,209,102,0.34);
+}
+.adn-premium-btn:active {
+  transform: scale(0.97);
+}
+
+/* Cyan glow button */
+.adn-cyan-btn {
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(77,226,255,0.22), rgba(104,246,200,0.14));
+  border: 1px solid rgba(77,226,255,0.28);
+  color: #4DE2FF;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(77,226,255,0.12), 0 8px 24px rgba(77,226,255,0.14);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.adn-cyan-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(77,226,255,0.22), 0 12px 28px rgba(77,226,255,0.20);
+}
+
+/* Soft noise texture overlay */
+.adn-soft-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: .18;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Gold glow card */
+.adn-card-gold {
+  box-shadow: 0 0 0 1px rgba(255,209,102,0.14), 0 0 28px rgba(255,209,102,0.22), 0 12px 30px rgba(0,0,0,0.28);
+}
+
+/* Cyan glow card */
+.adn-card-cyan {
+  box-shadow: 0 0 0 1px rgba(77,226,255,0.16), 0 0 28px rgba(77,226,255,0.18), 0 12px 30px rgba(0,0,0,0.28);
+}
+
+/* Tap orb glow pulse */
+@keyframes adn-orb-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 0 42px rgba(77,226,255,0.20), 0 0 70px rgba(255,209,102,0.14); }
+  50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 0 56px rgba(77,226,255,0.30), 0 0 90px rgba(255,209,102,0.22); }
+}
+.adn-orb-pulse {
+  animation: adn-orb-pulse 2.4s ease-in-out infinite;
+}
+
+/* Low perf: disable heavy effects */
+body[data-low-perf="true"] .adn-orb-pulse {
+  animation: none;
+}
+body[data-low-perf="true"] .adn-card-gold,
+body[data-low-perf="true"] .adn-card-cyan {
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+}

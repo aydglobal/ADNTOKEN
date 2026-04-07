@@ -41,6 +41,7 @@ import ChestRevealSequence from '../components/ChestRevealSequence';
 import { ScreenTransition, TapMotionButton, MotionCard, ChestRevealMotion } from '../components/MotionPack';
 import FeedbackSettingsCard from '../components/FeedbackSettingsCard';
 import AdnOpeningScreen from '../components/AdnOpeningScreen';
+import { BottomNavPro } from '../components/ui/BottomNavPro';
 import { calcEmpireStats } from '../hooks/useEmpireEngine';
 import { useMissionEngine } from '../game/missions/useMissionEngine';
 import MissionDrawerMobile from '../components/missions/MissionDrawerMobile';
@@ -993,24 +994,16 @@ export default function App() {
         {!isMineTab ? heroSection : null}
         {!isMineTab ? <SystemTicker items={feedItems.slice(0, 4)} /> : null}
 
-        <nav className="game-dock">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`game-dock__button${activeTab === tab.key ? ' is-active' : ''}`}
-              onClick={() => navigateToTab(tab.key)}
-            >
-              {tab.key === 'tasks' && daily?.canClaim === true ? (
-                <span className="game-dock__badge" />
-              ) : null}
-              <span className="game-dock__icon">
-                <AppIcon name={tab.icon} size={20} />
-              </span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
+        <BottomNavPro
+          active={activeTab}
+          onChange={(key) => navigateToTab(key as TabKey)}
+          items={TABS.map((tab) => ({
+            key: tab.key,
+            label: tab.label,
+            icon: <AppIcon name={tab.icon} size={20} />,
+            badge: tab.key === 'tasks' && daily?.canClaim === true
+          }))}
+        />
 
         {rebootFx ? <div className="game-reboot-overlay" /> : null}
         {rebootReveal ? <div className="game-reboot-reveal">{rebootReveal}</div> : null}
@@ -1477,7 +1470,7 @@ function MineSection({
           <ComboDisplay multiplier={comboMultiplier} count={comboCount} visible={isComboActive} />
           <TapMotionButton
             type="button"
-            className={`game-tapper__button${isReady ? ' is-ready' : ''}`}
+            className={`game-tapper__button adn-orb-pulse${isReady ? ' is-ready' : ''}`}
             onClick={onTap}
             disabled={user.energy <= 0}
             energy={user.energy}
