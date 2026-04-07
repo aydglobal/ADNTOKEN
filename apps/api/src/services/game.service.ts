@@ -301,7 +301,14 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
           : null
     };
   return result;
-}).then(async (txResult) => {
+}).then(async (txResult: {
+    coins: number; energy: number; energyMax: number; addedCoins: number;
+    level: number; tapMultiplier: number; tapNonce: number; passiveIncomePerHour: number;
+    pendingMiningCoins: number; criticalHit?: boolean; critMultiplier?: number;
+    prestigeBonus?: number; comboMultiplier?: number;
+    chest?: { tier: string; rewardCoins: number; shards: number; boostMinutes: number; jackpot?: boolean; dropped: true } | null;
+    note?: string | null;
+  }) => {
     // Post-tap işlemleri — response'u bekletme, arka planda çalışsın
     Promise.all([
       progressMissionsForEvent(userId, 'tap', {
@@ -326,8 +333,6 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
 
     return txResult;
   });
-
-  return result;
 }
 
 export async function refillEnergy(userId: string) {
