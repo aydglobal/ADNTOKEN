@@ -1,20 +1,14 @@
 import { useEffect } from 'react';
 import { gameBus } from '../lib/gameBus';
 import { playHaptic } from '../lib/haptics';
-import { playSoftClick, playSuccessTone, playUpgradeTone } from '../lib/sfx';
+import { playSuccessTone, playUpgradeTone } from '../lib/sfx';
 
+/**
+ * Tap ve crit sesleri handleTap içinde direkt çağrılıyor.
+ * Bu hook sadece level_up, chest_open ve upgrade event'lerini dinler.
+ */
 export function useFeedbackLayer() {
   useEffect(() => {
-    const offTap = gameBus.on('tap', () => {
-      playHaptic('light');
-      playSoftClick();
-    });
-
-    const offCrit = gameBus.on('crit', () => {
-      playHaptic('medium');
-      playSoftClick();
-    });
-
     const offLevel = gameBus.on('level_up', () => {
       playHaptic('success');
       playSuccessTone();
@@ -38,8 +32,6 @@ export function useFeedbackLayer() {
     });
 
     return () => {
-      offTap();
-      offCrit();
       offLevel();
       offChest();
       offUpgrade();

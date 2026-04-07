@@ -1051,7 +1051,7 @@ textarea {
 
 .game-hero__intro {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: 14px;
   margin-bottom: 14px;
 }
@@ -1291,8 +1291,8 @@ textarea {
 
 .game-tapper__halo {
   position: absolute;
-  width: 420px;
-  height: 420px;
+  width: min(420px, 90vw);
+  height: min(420px, 90vw);
   border-radius: 50%;
   background:
     radial-gradient(circle, rgba(255, 204, 87, 0.28), rgba(82, 229, 255, 0.14) 54%, transparent 78%);
@@ -1306,14 +1306,14 @@ textarea {
 
 .game-tapper__button {
   position: relative;
-  width: 420px;
-  height: 400px;
+  width: min(420px, 90vw);
+  height: min(400px, 85vw);
   border: none;
   background: transparent;
   padding: 0;
   cursor: pointer;
   transition: transform 140ms ease;
-  animation: gameTapIdle 4.8s ease-in-out infinite;
+  /* gameTapIdle kaldırıldı — framer-motion whileTap yeterli, CSS anim CPU'yu yoruyordu */
 }
 
 .game-tapper__button.is-pressed {
@@ -1329,6 +1329,7 @@ textarea {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .game-tapper__spotlight {
@@ -1363,8 +1364,10 @@ textarea {
   width: 82%;
   height: 92%;
   object-fit: contain;
+  object-position: bottom center;
   transform: translateX(-50%);
   filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.24));
+  display: block;
 }
 
 .game-tapper__float {
@@ -1375,6 +1378,7 @@ textarea {
   font-weight: 800;
   text-shadow: 0 10px 16px rgba(0, 0, 0, 0.32);
   pointer-events: none;
+  z-index: 10;
   animation: gameTapFloat 1s ease-out forwards;
 }
 
@@ -2060,7 +2064,11 @@ textarea {
   position: relative;
   z-index: 2;
   width: min(410px, 74vw);
+  height: auto;
+  max-height: 70%;
   object-fit: contain;
+  display: block;
+  flex-shrink: 0;
   filter:
     drop-shadow(0 24px 42px rgba(0, 0, 0, 0.36))
     drop-shadow(0 0 32px rgba(255, 210, 80, 0.18));
@@ -2319,6 +2327,34 @@ textarea {
 @media (max-width: 720px) {
   .game-shell {
     padding: 12px 10px 108px;
+  }
+
+  /* Loading screen mobilde tek kolon */
+  .game-loading__scene {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .game-loading__visual {
+    min-height: 280px;
+    order: -1;
+  }
+
+  .game-loading__core {
+    width: min(280px, 72vw);
+  }
+
+  .game-loading__visual-ring--outer {
+    width: min(320px, 72vw);
+  }
+
+  .game-loading__visual-ring--inner {
+    width: min(260px, 58vw);
+  }
+
+  .game-loading__lion {
+    width: min(240px, 60vw);
   }
 
   .game-shell.is-mine-focus {
@@ -2685,6 +2721,12 @@ textarea {
   opacity: 0.82;
   transform-origin: center;
   animation: gameCoreParticleOrbit 6s linear infinite;
+}
+
+/* Enerji 0 olduğunda particle animasyonunu durdur */
+.game-tapper__button:disabled .game-core-particle {
+  animation-play-state: paused;
+  opacity: 0.3;
 }
 
 .game-tapper__ripple {

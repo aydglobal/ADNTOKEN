@@ -702,6 +702,7 @@ body[data-low-perf="true"] .game-dock__badge {
 .adn-balance-strip {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0;
   padding: 10px 16px;
   border-radius: 20px;

@@ -78,28 +78,13 @@ export function TapMotionButton({
               scale: 0.955,
               rotateX: 8,
               rotateY: -8,
-              boxShadow: "0 8px 40px rgba(0,0,0,0.36)",
             }
       }
-      animate={
-        disabled
-          ? { scale: 1, filter: "saturate(0.78)" }
-          : {
-              scale: [1, 1.008, 1],
-              boxShadow: [
-                "0 18px 60px rgba(0,0,0,0.42)",
-                "0 20px 68px rgba(246,196,83,0.14)",
-                "0 18px 60px rgba(0,0,0,0.42)",
-              ],
-            }
-      }
-      transition={{
-        duration: 0.18,
-        boxShadow: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
-      }}
+      transition={{ duration: 0.15 }}
       style={{
         transformStyle: "preserve-3d",
         willChange: "transform",
+        filter: disabled ? "saturate(0.78)" : undefined,
         ...style,
       }}
       {...props}
@@ -114,28 +99,12 @@ export function MotionCard({ active = false, children, style, ...props }: Motion
     <motion.div
       whileHover={{
         y: -4,
-        rotateX: 2,
-        rotateY: -2,
         boxShadow: active
           ? "0 22px 56px rgba(246,196,83,0.18)"
           : "0 18px 44px rgba(0,0,0,0.26)",
       }}
       whileTap={{ scale: 0.985 }}
-      animate={
-        active
-          ? {
-              boxShadow: [
-                "0 14px 40px rgba(246,196,83,0.08)",
-                "0 18px 48px rgba(246,196,83,0.16)",
-                "0 14px 40px rgba(246,196,83,0.08)",
-              ],
-            }
-          : undefined
-      }
-      transition={{
-        duration: 0.18,
-        boxShadow: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
-      }}
+      transition={{ duration: 0.18 }}
       style={{
         transformStyle: "preserve-3d",
         willChange: "transform",

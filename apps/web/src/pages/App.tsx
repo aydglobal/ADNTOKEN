@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, useRef, type MouseEvent } from 'react';
 import type {
   ActiveBoost,
   AirdropDashboard,
@@ -176,6 +176,7 @@ export default function App() {
     stats: missionStats,
   });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
+  const tapThrottleRef = useRef<number>(0);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -428,6 +429,11 @@ export default function App() {
 
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
+
+    // Throttle: 120ms aralıktan daha sık tap API isteği gönderme
+    const now = Date.now();
+    if (now - tapThrottleRef.current < 120) return;
+    tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;

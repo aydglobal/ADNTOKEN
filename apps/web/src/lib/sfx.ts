@@ -1,18 +1,30 @@
 let audioContext: AudioContext | null = null;
 
-function ctx() {
+function ctx(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   if (!audioContext) {
-    const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioCtor =
+      window.AudioContext ||
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) return null;
     audioContext = new AudioCtor();
+  }
+  // Tarayıcı politikası nedeniyle suspended olabilir — kullanıcı etkileşiminde resume et
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => null);
   }
   return audioContext;
 }
 
-function tone(frequency: number, durationMs: number, gainValue: number, type: OscillatorType, when = 0) {
+function tone(
+  frequency: number,
+  durationMs: number,
+  gainValue: number,
+  type: OscillatorType,
+  when = 0
+) {
   const context = ctx();
-  if (!context) return;
+  if (!context || context.state === 'suspended') return;
 
   const oscillator = context.createOscillator();
   const gain = context.createGain();
