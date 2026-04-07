@@ -88,8 +88,8 @@ export async function createFraudAlert(
       userId,
       riskType,
       title: `Fraud detected: ${riskType}`,
-      details: details ?? {},
-      score: details?.score as number ?? 50,
+      details: details ? JSON.parse(JSON.stringify(details)) : undefined,
+      score: (details?.score as number) ?? 50,
       status: 'open'
     }
   });

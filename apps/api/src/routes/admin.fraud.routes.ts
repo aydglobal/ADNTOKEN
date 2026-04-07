@@ -71,8 +71,6 @@ router.post('/ops/users/:userId/lock', async (req, res) => {
   res.json({ success: true, user });
 });
 
-export default router;
-
 // Hesabı askıya al (suspend)
 router.post('/suspend/:userId', async (req, res) => {
   const { reason } = req.body;
