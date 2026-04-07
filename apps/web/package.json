@@ -1,7 +1,6 @@
 {
   "name": "web",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
