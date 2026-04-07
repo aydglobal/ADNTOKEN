@@ -1,20 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
 
 :root {
-  --adn-bg: #0a0618;
-  --adn-panel: rgba(20, 12, 50, 0.88);
-  --adn-panel-strong: rgba(18, 18, 64, 0.94);
-  --adn-panel-border: rgba(255, 255, 255, 0.15);
-  --adn-gold: #ffdd00;
-  --adn-orange: #ff7a30;
-  --adn-cyan: #00f5ff;
-  --adn-blue: #4f8cff;
-  --adn-pink: #ff2db4;
+  /* Master Pack Design Tokens */
+  --bg-primary: #07111F;
+  --bg-secondary: #0B1220;
+  --surface-deep: rgba(255,255,255,0.06);
+  --surface-glass: rgba(255,255,255,0.08);
+  --surface-elevated: rgba(255,255,255,0.12);
+  --border-soft: rgba(255,255,255,0.10);
+  --border-active: rgba(56,189,248,0.38);
+  --accent-primary: #38BDF8;
+  --accent-secondary: #60A5FA;
+  --accent-premium: #D6B25E;
+  --color-success: #34D399;
+  --color-warning: #FB7185;
+  --text-primary: #F3F7FB;
+  --text-secondary: #A6B4C3;
+  --text-muted: #6E8097;
+
+  /* Legacy aliases */
+  --adn-bg: var(--bg-primary);
+  --adn-panel: rgba(11,18,32,0.88);
+  --adn-panel-strong: rgba(7,17,31,0.94);
+  --adn-panel-border: var(--border-soft);
+  --adn-gold: var(--accent-premium);
+  --adn-orange: #fb923c;
+  --adn-cyan: var(--accent-primary);
+  --adn-blue: var(--accent-secondary);
+  --adn-pink: var(--color-warning);
   --adn-violet: #8b5cf6;
-  --adn-text: #fff8ec;
-  --adn-muted: rgba(255, 248, 236, 0.72);
+  --adn-text: var(--text-primary);
+  --adn-muted: var(--text-secondary);
   --adn-title-font: 'Orbitron', 'Segoe UI', sans-serif;
   --adn-body-font: 'Space Grotesk', 'Segoe UI', sans-serif;
+
+  /* Shadows */
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.18);
+  --shadow-card: 0 12px 36px rgba(0,0,0,0.28);
+  --glow-cyan: 0 0 30px rgba(56,189,248,0.22);
+  --glow-gold: 0 0 30px rgba(214,178,94,0.18);
 }
 
 * {
@@ -29,16 +53,15 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: var(--tg-viewport-height, 100vh);
-  color: var(--adn-text);
+  color: var(--text-primary);
   font-family: var(--adn-body-font);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   background:
-    radial-gradient(circle at 8% 10%, rgba(255, 137, 58, 0.65), transparent 24%),
-    radial-gradient(circle at 86% 12%, rgba(0, 245, 255, 0.62), transparent 22%),
-    radial-gradient(circle at 52% 52%, rgba(139, 92, 246, 0.32), transparent 28%),
-    radial-gradient(circle at 50% 100%, rgba(255, 45, 180, 0.38), transparent 34%),
-    linear-gradient(180deg, #0a0618 0%, #160830 40%, #080f28 100%);
+    radial-gradient(circle at 18% 0%, rgba(56,189,248,0.12), transparent 28%),
+    radial-gradient(circle at 84% 14%, rgba(214,178,94,0.1), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(139,92,246,0.1), transparent 30%),
+    linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
   overflow-x: hidden;
 }
 

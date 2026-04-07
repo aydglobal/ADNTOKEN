@@ -776,6 +776,7 @@ export default function App() {
             </span>
             <div className="game-brand__copy">
               <h1 className="game-brand__title">ADN Arena</h1>
+              <span className="game-eyebrow">Lv {user.level}</span>
             </div>
           </div>
 
@@ -787,12 +788,39 @@ export default function App() {
               </span>
               <div>
                 <span className="game-header-stat__label">Seri</span>
-                <strong className="game-header-stat__value">{`${daily?.streakDay || user.dailyStreak || 0} gun`}</strong>
+                <strong className="game-header-stat__value">{`${daily?.streakDay || user.dailyStreak || 0}g`}</strong>
               </div>
             </div>
-            <HeaderStat icon="boost" label="Boost" value={activeBoosts.length ? `${activeBoosts.length} aktif` : 'Hazir'} />
+            <HeaderStat icon="boost" label="Boost" value={activeBoosts.length ? `${activeBoosts.length}x` : '-'} />
           </div>
         </header>
+
+        {/* Balance Strip */}
+        <div className="adn-balance-strip">
+          <div className="adn-balance-strip__item adn-balance-strip__item--gold">
+            <span className="adn-balance-strip__label">ADN</span>
+            <strong className="adn-balance-strip__value"><AnimatedNumber value={user.coins} compact /></strong>
+          </div>
+          <div className="adn-balance-strip__divider" />
+          <div className="adn-balance-strip__item">
+            <span className="adn-balance-strip__label">Saatlik</span>
+            <strong className="adn-balance-strip__value"><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</strong>
+          </div>
+          <div className="adn-balance-strip__divider" />
+          <div className="adn-balance-strip__item">
+            <span className="adn-balance-strip__label">Enerji</span>
+            <strong className="adn-balance-strip__value">{fmt(user.energy)}/{fmt(user.maxEnergy)}</strong>
+          </div>
+          {activeBoosts.length > 0 && (
+            <>
+              <div className="adn-balance-strip__divider" />
+              <div className="adn-balance-strip__item adn-balance-strip__item--cyan">
+                <span className="adn-balance-strip__label">Boost</span>
+                <strong className="adn-balance-strip__value">{activeBoosts.length} aktif</strong>
+              </div>
+            </>
+          )}
+        </div>
 
         <main key={activeTab} className="game-screen">
           <ScreenTransition screenKey={activeTab}>
