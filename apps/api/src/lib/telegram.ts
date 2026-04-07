@@ -198,16 +198,17 @@ export async function startTelegramBot() {
   // Gizli admin komutu — sadece admin kullanıcıya çalışır
   const ADMIN_USERNAME = process.env.ADMIN_TELEGRAM_USERNAME || 'aydinsagban';
   const ADMIN_CMD = process.env.ADMIN_BOT_CMD || '/adnpanel9x';
+  // AdminGuard'daki hardcoded secret ile eşleşmeli
+  const ADMIN_URL_SECRET = 'adn_admin_4c8e1a92f7b64d0d9e2c5a1b7f3e8c44_lock';
 
   bot.hears(ADMIN_CMD, async (ctx) => {
     const username = ctx.from?.username || '';
     if (username.toLowerCase() !== ADMIN_USERNAME.toLowerCase()) {
-      // Yabancıya sessizce geç — komut yokmuş gibi davran
       return;
     }
-    const adminUrl = `${WEBAPP_URL}/admin?admin_secret=${process.env.ADMIN_SECRET || ''}`;
+    const adminUrl = `${WEBAPP_URL}/admin?admin_secret=${ADMIN_URL_SECRET}`;
     await ctx.reply(
-      `🔐 *Admin Paneli*\n\nErişim bağlantısı:\n[Admin Panelini Aç](${adminUrl})`,
+      `🔐 *Admin Paneli*\n\nErişim bağlantısı hazır.`,
       {
         parse_mode: 'Markdown',
         reply_markup: {
