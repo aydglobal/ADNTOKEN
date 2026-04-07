@@ -1582,16 +1582,27 @@ function BoostsSection({
         <div className="game-grid game-grid--triple">
           {boosts.map((boost) => {
             const active = user.boosts?.find((item) => item.type === boost.key) || null;
+            const isVip = boost.key === 'vip_weekly';
+            const isEvent = boost.key === 'event_pass';
+            const badge = (boost as any).badge as string | undefined;
             return (
-              <div key={boost.key} className={`game-panel game-boost-card${active ? ' game-boost-card--active' : ''}`}>
+              <div key={boost.key} className={`game-panel game-boost-card${active ? ' game-boost-card--active' : ''}${isVip ? ' game-boost-card--vip' : ''}${isEvent ? ' game-boost-card--event' : ''}`}>
                 <div className="game-task-card__top">
                   <strong>{boost.name}</strong>
-                  <span className="game-pill">{labelForBoost(boost.key)}</span>
+                  {badge ? (
+                    <span className={`game-pill ${badge === 'VIP' ? 'is-vip' : badge === 'LIMITED' ? 'is-danger' : badge === 'HOT' ? 'is-hot' : 'is-info'}`}>{badge}</span>
+                  ) : (
+                    <span className="game-pill">{labelForBoost(boost.key)}</span>
+                  )}
                 </div>
-                <div className="game-metric-card__value">{boost.value}</div>
-                <div className="game-note">{boost.durationHours} saat etki. Max level {boost.maxLevel || 1}.</div>
+                {(boost as any).description ? (
+                  <div className="game-note" style={{ marginBottom: 4 }}>{(boost as any).description}</div>
+                ) : (
+                  <div className="game-metric-card__value">{boost.value}</div>
+                )}
+                <div className="game-note">{boost.durationHours < 1 ? `${Math.round(boost.durationHours * 60)} dk` : `${boost.durationHours} saat`} etki.</div>
                 <div className="game-actions">
-                  <button className="game-button" disabled={Boolean(busyKey)} onClick={() => onBoost(boost.key, 'buy')}>
+                  <button className={`game-button${isVip ? ' game-button--vip' : ''}`} disabled={Boolean(busyKey)} onClick={() => onBoost(boost.key, 'buy')}>
                     {busyKey === `boost:${boost.key}:buy` ? 'Isleniyor...' : `${fmt(boost.price)} ADN`}
                   </button>
                   {boost.freeClaimCooldownHours ? (

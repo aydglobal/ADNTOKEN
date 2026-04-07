@@ -1591,3 +1591,44 @@ body[data-low-perf="true"] .game-dock__badge {
   left: 0;
   right: 0;
 }
+
+/* ===== BOOST CARD VARIANTS ===== */
+.game-boost-card--vip {
+  border-color: rgba(214,178,94,0.4) !important;
+  background: linear-gradient(180deg, rgba(214,178,94,0.14), rgba(7,17,31,0.95)) !important;
+  box-shadow: 0 0 28px rgba(214,178,94,0.18) !important;
+}
+
+.game-boost-card--event {
+  border-color: rgba(251,113,133,0.4) !important;
+  background: linear-gradient(180deg, rgba(251,113,133,0.12), rgba(7,17,31,0.95)) !important;
+  box-shadow: 0 0 28px rgba(251,113,133,0.16) !important;
+  animation: gameClaimPulse 2.4s ease-in-out infinite;
+}
+
+.game-pill.is-vip {
+  background: linear-gradient(135deg, rgba(214,178,94,0.3), rgba(255,221,0,0.2));
+  color: #ffd700;
+  border-color: rgba(214,178,94,0.4);
+  font-weight: 800;
+}
+
+.game-pill.is-danger {
+  background: rgba(251,113,133,0.16);
+  color: #fb7185;
+  border-color: rgba(251,113,133,0.3);
+  animation: gameClaimPulse 1.8s ease-in-out infinite;
+}
+
+.game-pill.is-hot {
+  background: rgba(251,146,60,0.16);
+  color: #fb923c;
+  border-color: rgba(251,146,60,0.3);
+}
+
+.game-button--vip {
+  background: linear-gradient(135deg, rgba(214,178,94,0.3), rgba(255,183,3,0.2)) !important;
+  border-color: rgba(214,178,94,0.4) !important;
+  color: #ffd700 !important;
+  box-shadow: 0 0 20px rgba(214,178,94,0.2) !important;
+}
