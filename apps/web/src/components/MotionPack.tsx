@@ -1,5 +1,6 @@
 import React from "react";
 import { AnimatePresence, motion, type HTMLMotionProps } from "framer-motion";
+import liongiftImg from "../assets/liongift.jpg";
 
 type ScreenTransitionProps = {
   screenKey: string;
@@ -219,15 +220,48 @@ export function ChestRevealMotion({
               }}
               style={{
                 position: "relative",
-                width: 140,
-                height: 140,
+                width: 160,
+                height: 160,
                 margin: "0 auto 18px",
                 borderRadius: 28,
-                background: "linear-gradient(180deg, rgba(246,196,83,0.22), rgba(56,189,248,0.14))",
-                border: "1px solid rgba(255,255,255,0.1)",
+                overflow: "hidden",
                 boxShadow: rarityGlow[rarity],
               }}
-            />
+            >
+              <img
+                src={liongiftImg}
+                alt="Lion Gift"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: 28,
+                  display: "block",
+                }}
+              />
+              {/* Rarity overlay */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: 28,
+                background: rarityGradient[rarity],
+                mixBlendMode: "overlay",
+                pointerEvents: "none",
+              }} />
+              {jackpot && (
+                <motion.div
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 0.4, repeat: Infinity }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: 28,
+                    background: "rgba(246,196,83,0.4)",
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
+            </motion.div>
 
             <motion.h3
               initial={{ opacity: 0, y: 14 }}
