@@ -730,15 +730,14 @@ export default function App() {
   if (showOpening) {
     return (
       <AdnOpeningScreen
+        onEnter={() => setShowOpening(false)}
         balance={user?.coins ?? 0}
         level={user?.level ?? 1}
         combo={comboCount}
-        dailyRewardAmount={daily?.nextReward ?? 2400}
+        dailyRewardAmount={daily?.nextReward ?? 0}
         dailyRewardProgress={daily?.canClaim ? 100 : ((daily?.streakDay ?? 0) / 7) * 100}
         nextUnlockTitle={activeDaily[0]?.title ?? "Vault Tier I"}
         nextUnlockRemaining={Math.max(0, (activeDaily[0]?.target ?? 4) - (activeDaily[0]?.progress ?? 0))}
-        heroImage={lionImage}
-        onEnterGame={() => setShowOpening(false)}
         onOpenLitepaper={() => window.open("https://adntoken.io/litepaper", "_blank")}
         onClaimDaily={() => { setShowOpening(false); setActiveTab("tasks"); }}
       />
