@@ -156,7 +156,7 @@ export default function App() {
 
   // Mission Engine V2
   const missionStats = {
-    taps: user?.taps ?? 0,
+    taps: user?.totalTaps ?? 0,
     coinsEarned: user?.coins ?? 0,
     comboBest: comboCount,
     criticalHits: 0,
@@ -733,14 +733,14 @@ export default function App() {
         balance={user?.coins ?? 0}
         level={user?.level ?? 1}
         combo={comboCount}
-        dailyRewardAmount={daily?.reward ?? 2400}
+        dailyRewardAmount={daily?.nextReward ?? 2400}
         dailyRewardProgress={daily?.canClaim ? 100 : ((daily?.streakDay ?? 0) / 7) * 100}
-        nextUnlockTitle={activeDaily?.title ?? "Vault Tier I"}
-        nextUnlockRemaining={Math.max(0, (activeDaily?.target ?? 4) - (activeDaily?.progress ?? 0))}
+        nextUnlockTitle={activeDaily[0]?.title ?? "Vault Tier I"}
+        nextUnlockRemaining={Math.max(0, (activeDaily[0]?.target ?? 4) - (activeDaily[0]?.progress ?? 0))}
         heroImage={lionImage}
         onEnterGame={() => setShowOpening(false)}
         onOpenLitepaper={() => window.open("https://adntoken.io/litepaper", "_blank")}
-        onClaimDaily={() => { setShowOpening(false); setActiveTab("earn"); }}
+        onClaimDaily={() => { setShowOpening(false); setActiveTab("tasks"); }}
       />
     );
   }
