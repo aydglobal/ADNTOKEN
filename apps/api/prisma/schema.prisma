@@ -11,6 +11,11 @@ enum BoostType {
   tap_x2
   energy_cap
   regen_x2
+  tap_x5
+  combo_lock
+  crit_boost
+  vip_weekly
+  event_pass
 }
 
 enum BoostSource {
