@@ -1,0 +1,25 @@
+{
+  "name": "web",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^5.1.0",
+    "framer-motion": "^12.38.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "fast-check": "^4.6.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vitest": "^4.1.2"
+  }
+}
