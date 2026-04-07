@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Settings, Bell, ChevronRight, Sparkles, Trophy, Zap } from "lucide-react";
 import startlionImg from "../assets/startlion.jpg";
+import adnTokenImg from "../assets/adn-token-clean.png";
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
 type Lang = "tr" | "en" | "ru" | "de" | "fr" | "es" | "ar" | "zh" | "ja" | "ko";
@@ -288,7 +289,9 @@ function TopBar({ t, onSettings, onBell }: { t: typeof translations["en"]; onSet
       className="adn-opening-topbar"
     >
       <div className="adn-opening-brand">
-        <div className="adn-opening-logo"><span>ADN</span></div>
+        <div className="adn-opening-logo">
+          <img src={adnTokenImg} alt="ADN" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }} />
+        </div>
         <div>
           <p className="adn-opening-eyebrow">{t.earlyAccess}</p>
           <h1 className="adn-opening-title">{t.title}</h1>
@@ -449,9 +452,6 @@ function RightPanel({
             <img src={startlionImg} alt="ADN Lion" className="adn-opening-lion-img" />
             <div className="adn-opening-img-overlay-bottom" />
             <div className="adn-opening-img-overlay-top" />
-            <HudPill className="adn-hud-tl" title={t.balance} value={`${fmt(balance)} ADN`} glow="cyan" />
-            <HudPill className="adn-hud-tr" title="Level" value={`Lv. ${level}`} glow="gold" />
-            <HudPill className="adn-hud-bl" title={t.combo} value={`x${combo} ${t.comboReady}`} glow="cyan" />
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
