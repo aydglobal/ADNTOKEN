@@ -183,17 +183,14 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
     );
     const gameplay = resolveGameplayState(user, user.ownedUpgrades);
     const effectiveEnergyMax = getEffectiveEnergyMax(gameplay.maxEnergy, boostState.energyMaxBonus);
-    const restored = restoreEnergy({
-      currentEnergy: user.energy,
-      lastEnergyAt: user.lastEnergyAt,
-      energyMax: effectiveEnergyMax,
-      regenPerMinute: gameplay.regenPerMinute * boostState.regenMultiplier
-    });
 
-    if (restored.energy < totalCost) {
+    // Tap sırasında enerji restore etme — sadece mevcut enerjiyi kullan
+    const currentEnergy = Math.min(user.energy, effectiveEnergyMax);
+
+    if (currentEnergy < totalCost) {
       return {
         coins: user.coins,
-        energy: restored.energy,
+        energy: currentEnergy,
         energyMax: effectiveEnergyMax,
         addedCoins: 0,
         level: gameplay.level,
@@ -218,7 +215,7 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
     const addedCoins = Math.max(1, Math.floor(baseTapReward * boostState.tapMultiplier * eventTapMultiplier));
     const nextCoins = user.coins + addedCoins;
     const nextXp = user.xp + addedCoins;
-    const nextEnergy = restored.energy - totalCost;
+    const nextEnergy = currentEnergy - totalCost;
     const nextGameplay = resolveGameplayState(
       {
         coins: nextCoins,
