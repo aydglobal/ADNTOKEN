@@ -19,8 +19,9 @@ declare global {
 }
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Admin secret varsa auth'u atla — adminOnlyMiddleware halleder
+  // Admin secret varsa auth'u atla — req.user'ı dummy admin olarak set et
   if (req.header('x-admin-secret') === env.ADMIN_SECRET) {
+    req.user = { id: 'admin', telegramId: 'admin', username: 'admin', isAdmin: true };
     return next();
   }
 

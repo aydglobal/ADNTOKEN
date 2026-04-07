@@ -46,6 +46,7 @@ import { runNotificationWorker } from './workers/notification.worker';
 import { runAnalyticsDailyJob } from './workers/analyticsDaily.worker';
 
 const app = express();
+app.set('trust proxy', 1); // Render/Vercel proxy desteği
 
 // CORS — sadece izin verilen origin'ler
 const allowedOrigins = env.ALLOWED_ORIGINS

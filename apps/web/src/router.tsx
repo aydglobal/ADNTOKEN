@@ -100,7 +100,10 @@ export default function MainRouter() {
         active={resolveAdminRoute(pathname)}
         onNavigate={(key) => {
           setAdminRoute(key);
-          window.history.pushState({}, '', key === 'dashboard' ? '/admin' : `/admin/${key}`);
+          const secret = new URLSearchParams(window.location.search).get('admin_secret');
+          const secretParam = secret ? `?admin_secret=${secret}` : '';
+          const path = key === 'dashboard' ? `/admin${secretParam}` : `/admin/${key}${secretParam}`;
+          window.history.pushState({}, '', path);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }}
         onExit={() => {
