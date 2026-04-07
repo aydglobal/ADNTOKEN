@@ -427,7 +427,7 @@ export default function App() {
   }
 
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
-    if (!token || !user || busyKey) return;
+    if (!token || !user || user.energy <= 0) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
@@ -439,7 +439,13 @@ export default function App() {
     playSoftClick();
     playHaptic('light');
     registerTap();
-    setBusyKey('tap');
+
+    // Optimistic update — anında göster, API'yi arka planda çağır
+    setUser({
+      ...user,
+      coins: user.coins + Math.max(1, user.tapPower),
+      energy: Math.max(0, user.energy - 1),
+    });
 
     try {
       const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
@@ -453,7 +459,6 @@ export default function App() {
         tapMultiplier: result.tapMultiplier ?? user.tapMultiplier,
         passiveIncomePerHour: result.passiveIncomePerHour ?? user.passiveIncomePerHour
       });
-      setStatusMessage(buildTapMessage(result));
       if (result.criticalHit) {
         pushBurst(`KRITIK x${result.critMultiplier || 2}`, x + 24, y - 16, 'pink');
         gameBus.emit('crit', { multiplier: result.critMultiplier });
@@ -468,11 +473,9 @@ export default function App() {
       if (shouldShowLevelUp(user.level ?? 1, result.level)) {
         gameBus.emit('level_up', { level: result.level });
       }
-      await Promise.allSettled([refreshAll(), postJSON('/api/onboarding/step', { step: 'firstTapDone' }, token)]);
-    } catch (tapError) {
-      setStatusMessage(extractMessage(tapError, 'Tap islenemedi.'));
-    } finally {
-      setBusyKey(null);
+      postJSON('/api/onboarding/step', { step: 'firstTapDone' }, token).catch(() => null);
+    } catch {
+      // Optimistic update zaten yapıldı, hata sessizce geç
     }
   }
 
@@ -1367,14 +1370,13 @@ function MineSection({
           <ComboDisplay multiplier={comboMultiplier} count={comboCount} visible={isComboActive} />
           <TapMotionButton
             type="button"
-            className={`game-tapper__button${busyKey === 'tap' ? ' is-pressed' : ''}${isReady ? ' is-ready' : ''}`}
+            className={`game-tapper__button${isReady ? ' is-ready' : ''}`}
             onClick={onTap}
-            disabled={busyKey === 'tap' || user.energy <= 0}
+            disabled={user.energy <= 0}
             energy={user.energy}
-            busy={busyKey === 'tap'}
+            busy={false}
           >
             <div className="game-tapper__stage">
-              <div className="game-tapper__spotlight" />
               {CORE_PARTICLES.map((particle) => (
                 <span
                   key={particle.id}
@@ -1382,7 +1384,6 @@ function MineSection({
                   style={{ top: particle.top, left: particle.left, animationDelay: particle.delay }}
                 />
               ))}
-              <span className="game-tapper__core-label">TAP CORE</span>
               <img src={lionImage} alt="ADN Lion" className="game-tapper__character" />
               <div className="game-tapper__platform" />
               {rewardBursts.map((item) => (

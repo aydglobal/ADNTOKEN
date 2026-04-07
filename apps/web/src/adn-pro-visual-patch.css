@@ -1,4 +1,276 @@
-/* ADN Arena - PRO VISUAL CSS PATCH */
+/* ===== TAPPER OVERHAUL ===== */
+.game-tapper__button {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.game-tapper__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-tapper__spotlight {
+  display: none;
+}
+
+.game-tapper__core-label {
+  display: none;
+}
+
+.game-tapper__character {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 90%;
+  height: 95%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  filter:
+    drop-shadow(0 0 28px rgba(246, 196, 83, 0.35))
+    drop-shadow(0 24px 32px rgba(0, 0, 0, 0.4));
+  transition: filter 80ms ease;
+  pointer-events: none;
+}
+
+.game-tapper__button:active .game-tapper__character {
+  filter:
+    drop-shadow(0 0 48px rgba(246, 196, 83, 0.7))
+    drop-shadow(0 0 24px rgba(56, 189, 248, 0.5))
+    drop-shadow(0 12px 20px rgba(0, 0, 0, 0.5));
+}
+
+.game-tapper__halo {
+  background:
+    radial-gradient(circle, rgba(246, 196, 83, 0.3) 0%, rgba(56, 189, 248, 0.18) 40%, rgba(139, 92, 246, 0.1) 62%, transparent 74%);
+  filter: blur(22px);
+  animation: coreHaloPulse 2.4s ease-in-out infinite;
+}
+
+.game-tapper__ripple {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(246, 196, 83, 0.7);
+  transform: translate(-50%, -50%) scale(0);
+  animation: tapRipple 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes tapRipple {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+.game-tapper {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-top: 8px;
+  min-height: 320px;
+}
+
+.game-arena {
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 100%, rgba(246, 196, 83, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(10, 15, 30, 0.95), rgba(5, 8, 18, 0.98));
+}
+
+/* ===== ENERGY BAR ===== */
+.game-energy-bar {
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+
+.game-energy-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 300ms ease;
+}
+
+/* ===== DOCK ===== */
+.game-dock {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 760px);
+  border-radius: 24px 24px 0 0;
+  padding: 8px 10px 20px;
+  background: rgba(8, 12, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+
+.game-dock__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-dock__button.is-active {
+  color: white;
+  background: linear-gradient(180deg, rgba(246, 196, 83, 0.2), rgba(56, 189, 248, 0.15));
+}
+
+/* ===== FLOAT NUMBERS ===== */
+.game-tapper__float {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  font-weight: 900;
+  pointer-events: none;
+  animation: tapFloat 0.9s ease-out forwards;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.game-tapper__float--gold { color: #f6c453; }
+.game-tapper__float--cyan { color: #38bdf8; }
+.game-tapper__float--pink { color: #ec4899; }
+.game-tapper__float--violet { color: #a78bfa; }
+
+@keyframes tapFloat {
+  0% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, calc(-50% - 80px)) scale(0.8); opacity: 0; }
+}
+
+/* ===== CORE PARTICLES ===== */
+.game-core-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f6c453, #38bdf8);
+  animation: coreParticleFloat 3s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+/* ===== HEADER ===== */
+.game-header {
+  padding: 12px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.game-brand__title {
+  font-size: clamp(18px, 4vw, 28px);
+}
+
+/* ===== HERO SECTION ===== */
+.game-hero {
+  padding: 14px;
+  border-radius: 24px;
+  margin-bottom: 12px;
+}
+
+.game-hero__title {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  word-break: break-word;
+}
+
+.game-hero__subtitle {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ===== SIGNAL GRID ===== */
+.game-signal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.game-signal-card {
+  padding: 12px;
+  border-radius: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.game-signal-card__value {
+  font-size: clamp(13px, 3vw, 18px);
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.2;
+  margin-top: 6px;
+}
+
+.game-signal-card__note {
+  font-size: 11px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  margin-top: 4px;
+}
+
+/* ===== STATUS BANNER ===== */
+.game-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  background: rgba(246, 196, 83, 0.1);
+  border: 1px solid rgba(246, 196, 83, 0.2);
+  color: #f6c453;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 640px) {
+  .game-frame {
+    padding: 10px 10px 90px;
+  }
+
+  .game-signal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-hero__intro {
+    grid-template-columns: 1fr;
+  }
+
+  .game-tapper {
+    min-height: 280px;
+  }
+
+  .game-tapper__button {
+    width: min(100%, 280px);
+    height: 300px;
+  }
+
+  .game-tapper__halo {
+    width: 280px;
+    height: 280px;
+  }
+}
 
 :root {
   --bg-0: #05070d;
