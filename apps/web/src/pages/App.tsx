@@ -232,36 +232,6 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    let frameId = 0;
-    let sampleStart = performance.now();
-    let frames = 0;
-
-    const tick = (time: number) => {
-      frames += 1;
-      const elapsed = time - sampleStart;
-
-      if (elapsed >= 1000) {
-        const fps = (frames * 1000) / elapsed;
-        if (fps < 60) {
-          document.body.setAttribute('data-low-perf', 'true');
-        } else {
-          document.body.removeAttribute('data-low-perf');
-        }
-        sampleStart = time;
-        frames = 0;
-      }
-
-      frameId = window.requestAnimationFrame(tick);
-    };
-
-    frameId = window.requestAnimationFrame(tick);
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      document.body.removeAttribute('data-low-perf');
-    };
-  }, []);
-
   const refreshAll = async () => {
     if (!token) return;
 
@@ -463,50 +433,28 @@ export default function App() {
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
-    // Empire engine hesaplaması
-    const empireStats = calcEmpireStats({
-      level: user.level ?? 1,
-      prestige: (user as any).prestigePower ?? 0,
-      tapPowerLevel: 0,
-      comboMasteryLevel: 0,
-      critEngineLevel: 0,
-      autoMinerLevel: 0,
-      tradeDeskLevel: 0,
-      quantumRigLevel: 0,
-      vipVaultLevel: 0,
-      combo: comboCount,
-    });
-
-    const isCrit = Math.random() < empireStats.critChance;
     const baseGain = Math.max(1, user.tapPower);
-    const empireGain = isCrit
-      ? baseGain * empireStats.comboMultiplier * empireStats.critMultiplier
-      : baseGain * empireStats.comboMultiplier;
+    const isCrit = Math.random() < 0.05; // basit crit, empire calc kaldırıldı
 
-    pushRipple(x, y);
-    if (isCrit) {
-      pushBurst(`CRIT x${empireStats.critMultiplier.toFixed(1)}`, x, y, 'pink');
-      pushBurst(`⚡`, x + 20, y - 20, 'violet');
-    }
-    pushBurst(`+${fmt(Math.round(empireGain))}`, x, y, 'gold');
-    // Combo milestone görsel
-    if (comboCount > 0 && comboCount % 10 === 0) {
-      pushBurst(`🔥 x${comboCount} COMBO`, x, y - 40, 'cyan');
-    }
+    // Sadece gold burst — crit'te pink ekle
+    pushBurst(`+${fmt(baseGain)}`, x, y, 'gold');
+    if (isCrit) pushBurst(`CRIT!`, x, y - 30, 'pink');
+
     triggerImpact('tap');
     playSoftClick();
-    playHaptic(isCrit ? 'medium' : 'light');
+    playHaptic('light');
     registerTap();
 
-    // Optimistic update
+    // Optimistic update — tek setState
     setUser((prev: any) => prev ? {
       ...prev,
-      coins: prev.coins + Math.round(empireGain),
+      coins: prev.coins + baseGain,
       energy: Math.max(0, prev.energy - 1),
     } : prev);
 
     try {
       const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
+      // API sonucu — sadece kritik alanları güncelle
       setUser((prev: any) => prev ? {
         ...prev,
         coins: result.coins,
@@ -514,26 +462,12 @@ export default function App() {
         maxEnergy: result.energyMax ?? prev.maxEnergy,
         level: result.level,
         tapNonce: result.tapNonce ?? prev.tapNonce,
-        tapMultiplier: result.tapMultiplier ?? prev.tapMultiplier,
-        passiveIncomePerHour: result.passiveIncomePerHour ?? prev.passiveIncomePerHour
       } : prev);
-      if (result.criticalHit) {
-        pushBurst(`KRITIK x${result.critMultiplier || 2}`, x + 24, y - 16, 'pink');
-        gameBus.emit('crit', { multiplier: result.critMultiplier });
-      } else {
-        gameBus.emit('tap');
-      }
-      if (result.chest?.dropped) {
-        playSuccessTone();
-        pushBurst(`${result.chest.tier.toUpperCase()} CHEST`, x - 18, y - 30, 'violet');
-        gameBus.emit('chest_open', { rarity: result.chest.tier, jackpot: result.chest.jackpot });
-      }
       if (shouldShowLevelUp(user.level ?? 1, result.level)) {
         gameBus.emit('level_up', { level: result.level });
       }
-      postJSON('/api/onboarding/step', { step: 'firstTapDone' }, token).catch(() => null);
     } catch {
-      // Optimistic update zaten yapıldı, hata sessizce geç
+      // sessizce geç
     }
   }
 
