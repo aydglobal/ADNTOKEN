@@ -5,12 +5,14 @@ const router = Router();
 
 router.get('/', async (req, res) => {
   const userId = req.user!.id;
-  const user = await getProfile(userId);
 
-  res.json({
-    success: true,
-    user
-  });
+  // Admin bypass dummy user
+  if (userId === 'admin') {
+    return res.json({ success: true, user: { id: 'admin', isAdmin: true, displayName: 'Admin' } });
+  }
+
+  const user = await getProfile(userId);
+  res.json({ success: true, user });
 });
 
 export default router;
