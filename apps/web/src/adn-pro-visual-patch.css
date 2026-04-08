@@ -2205,3 +2205,216 @@ nav[style*="position: fixed"] {
   font-weight: 800;
   color: #F3F7FB;
 }
+
+
+/* ===== LIGHT THEME GLOBAL FIX ===== */
+
+/* Tüm metin renkleri */
+.game-section,
+.game-panel,
+.game-task-card,
+.game-market-card,
+.game-metric-card,
+.game-leaderboard-row,
+.game-active-boost,
+.game-info-panel {
+  color: #0F172A !important;
+}
+
+.game-section__title,
+.game-panel__title,
+.game-section__description,
+.game-panel__description,
+.game-note,
+.game-empty,
+.game-eyebrow {
+  color: #475569 !important;
+}
+
+.game-section__title,
+.game-panel__title {
+  color: #0F172A !important;
+}
+
+/* Info panel satırları */
+.game-info-panel__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  color: #475569;
+  font-size: 13px;
+}
+
+.game-info-panel__row strong {
+  color: #0F172A !important;
+  font-weight: 700;
+}
+
+/* Task row — açık tema */
+.adn-task-row {
+  background: rgba(255,255,255,0.80) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+.adn-task-row--claimable {
+  border-color: rgba(59,130,246,0.35) !important;
+  background: rgba(59,130,246,0.05) !important;
+}
+
+.adn-task-row--done {
+  background: rgba(5,150,105,0.04) !important;
+  border-color: rgba(5,150,105,0.15) !important;
+}
+
+.adn-task-row__title {
+  color: #0F172A !important;
+}
+
+.adn-task-row__reward {
+  color: #D97706 !important;
+}
+
+.adn-task-row__icon {
+  background: rgba(0,0,0,0.04) !important;
+}
+
+.adn-task-row__progress {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+/* Task tab butonları — açık tema */
+.adn-task-tabs {
+  background: rgba(0,0,0,0.04) !important;
+  border-radius: 14px;
+  padding: 4px;
+}
+
+.adn-task-tab {
+  color: #94A3B8 !important;
+}
+
+.adn-task-tab--active {
+  background: #fff !important;
+  color: #2563EB !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+/* Stat chip — açık tema */
+.adn-stat-chip {
+  background: rgba(255,255,255,0.80) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  color: #0F172A;
+}
+
+.adn-stat-chip--gold {
+  border-color: rgba(217,119,6,0.20) !important;
+  background: rgba(217,119,6,0.05) !important;
+}
+
+.adn-stat-chip--cyan {
+  border-color: rgba(37,99,235,0.20) !important;
+  background: rgba(37,99,235,0.05) !important;
+}
+
+.adn-stat-chip__label {
+  color: #94A3B8 !important;
+}
+
+.adn-stat-chip__val {
+  color: #0F172A !important;
+  font-weight: 800;
+}
+
+/* Leaderboard — açık tema */
+.game-leaderboard-row__rank {
+  background: linear-gradient(135deg, #FACC15, #EAB308) !important;
+  color: #000 !important;
+}
+
+.game-leaderboard-row__body strong {
+  color: #0F172A;
+}
+
+.game-leaderboard-row__body span {
+  color: #94A3B8 !important;
+}
+
+.game-leaderboard-row__value {
+  color: #2563EB !important;
+  font-weight: 800;
+}
+
+/* Reboot panel */
+.game-reboot-panel__power {
+  font-size: 28px;
+  font-weight: 900;
+  color: #7C3AED;
+  margin: 8px 0;
+}
+
+/* Energy block footer */
+.adn-energy-block__footer {
+  color: #94A3B8 !important;
+}
+
+.adn-energy-block__label {
+  color: #475569 !important;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.adn-energy-block__value {
+  color: #0F172A !important;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Combo badge */
+.adn-combo-badge {
+  background: rgba(59,130,246,0.10) !important;
+  border: 1px solid rgba(59,130,246,0.20) !important;
+  color: #2563EB !important;
+}
+
+/* Game input */
+.game-input {
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  color: #0F172A !important;
+}
+
+/* Game button danger */
+.game-button--danger {
+  background: linear-gradient(135deg, #EF4444, #DC2626) !important;
+  color: #fff !important;
+}
+
+/* Progress bar */
+.game-progress-bar {
+  background: rgba(0,0,0,0.06) !important;
+}
+
+/* Active boost time */
+.game-active-boost__time {
+  color: #2563EB !important;
+}
+
+/* Metric card value */
+.game-metric-card__value {
+  color: #0F172A !important;
+}
+
+/* Ticker */
+.game-system-ticker {
+  background: rgba(255,255,255,0.70) !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  color: #475569 !important;
+}
+
+.game-ticker {
+  background: rgba(255,255,255,0.70) !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  color: #475569 !important;
+}

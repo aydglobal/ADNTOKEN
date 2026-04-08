@@ -1666,10 +1666,10 @@ textarea {
 }
 
 .game-info-panel__row strong,
-.game-link-box,
 .game-leaderboard-row__value,
 .game-task-card__reward {
-  color: #ffe39c;
+  color: #0F172A;
+  font-weight: 700;
 }
 
 .game-info-panel.is-compact .game-info-panel__row strong {
@@ -1792,18 +1792,29 @@ textarea {
 
 .game-input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(7, 12, 28, 0.8);
-  color: var(--adn-text);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.90);
+  color: #0F172A;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.game-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
 }
 
 .game-link-box {
   margin-top: 8px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: #475569;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
@@ -1820,8 +1831,8 @@ textarea {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(255, 204, 87, 0.18);
-  color: #ffe39c;
+  background: linear-gradient(135deg, #FACC15, #EAB308);
+  color: #000;
   font-weight: 800;
 }
 
