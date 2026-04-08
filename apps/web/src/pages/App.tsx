@@ -206,6 +206,7 @@ export default function App() {
   const [rebootReveal, setRebootReveal] = useState('');
   const [now, setNow] = useState(Date.now());
   const nowRef = useRef(Date.now());
+  const [feedIndex, setFeedIndex] = useState(0);
   const [onboardingStep, setOnboardingStep] = useState<
     'welcome' | 'tap_once' | 'open_shop' | 'buy_upgrade' | 'open_missions' | 'open_referral' | 'finish'
   >('finish');
