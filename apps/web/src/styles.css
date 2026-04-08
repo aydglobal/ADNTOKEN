@@ -1611,7 +1611,8 @@ textarea {
 }
 
 .game-grid--tasks {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .game-metric-card,
@@ -2801,15 +2802,22 @@ textarea {
 }
 
 .game-market-card {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
   border: 1px solid var(--glass-border) !important;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.game-market-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .game-market-card.is-locked {
