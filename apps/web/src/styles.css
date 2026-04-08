@@ -3559,10 +3559,12 @@ label {
   --premium-blue: #86c8ff;
   --premium-ice: #cfe7ff;
   --premium-text: #f8fbff;
-  --premium-soft: rgba(224, 235, 255, 0.72);
+  --premium-soft: rgba(234, 242, 255, 0.84);
   --premium-border: rgba(134, 173, 255, 0.16);
   --premium-border-strong: rgba(244, 200, 106, 0.24);
   --premium-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+  --premium-label: rgba(214, 228, 255, 0.92);
+  --premium-muted-strong: rgba(214, 228, 255, 0.76);
 }
 
 html,
@@ -3638,10 +3640,32 @@ body {
 .game-brand__title, .game-section__title, .game-panel__title, .game-hero__title {
   color: #fff;
   letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.24);
 }
 
 .game-eyebrow, .game-section__description, .game-brand__sub, .game-hero__subtitle, .game-note, .game-panel__description, .game-market-card p, .game-task-card p {
   color: var(--premium-soft);
+}
+
+.game-eyebrow,
+.game-header-stat__label,
+.game-energy-row__title,
+.game-daily-card__title,
+.adn-balance-strip__label,
+.adn-stat-chip__label {
+  color: var(--premium-label) !important;
+}
+
+.game-note,
+.game-panel__description,
+.game-section__description,
+.game-market-card p,
+.game-task-card p,
+.game-energy-block__footer,
+.game-ticker,
+.game-empty,
+.adn-task-row__reward {
+  color: var(--premium-muted-strong) !important;
 }
 
 .game-status-banner, .adn-balance-strip, .game-panel, .game-market-card, .game-task-card, .game-active-boost, .game-boost-card, .game-empty, .game-signal-card, .game-reboot-panel, .adn-task-row, .adn-task-tab, .game-input, .game-label, .game-ticker, .game-header-stat {
@@ -3712,6 +3736,7 @@ body {
   font-size: clamp(1.15rem, 2.5vw, 1.55rem);
   line-height: 1;
   color: #fff;
+  text-shadow: 0 1px 10px rgba(244, 200, 106, 0.12);
 }
 
 .adn-header-chips {
@@ -3737,6 +3762,7 @@ body {
   font-size: 0.92rem;
   font-weight: 800;
   white-space: nowrap;
+  opacity: 0.96;
 }
 
 .game-button, .adn-task-btn, .primary-action-button {
@@ -3827,6 +3853,7 @@ body {
   font-size: 1.35rem;
   font-weight: 900;
   line-height: 1;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.22);
 }
 
 .adn-balance-strip__item--gold .adn-balance-strip__value {
@@ -3975,6 +4002,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: rgba(236, 242, 252, 0.92);
 }
 
 .adn-bottom-dock__badge {
@@ -3998,6 +4026,32 @@ body {
   padding-bottom: 84px;
   color: rgba(255,255,255,0.62);
   text-align: center;
+}
+
+.adn-tap-btn {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.adn-tap-label {
+  color: #fff4d4;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-shadow: 0 2px 10px rgba(60, 37, 5, 0.42);
+}
+
+.adn-energy-block__header,
+.adn-energy-block__value,
+.adn-energy-block__footer,
+.adn-stat-chip__val,
+.game-header-stat__value {
+  color: #f7fbff !important;
+}
+
+.adn-energy-block__pct {
+  color: #08233c !important;
+  background: linear-gradient(180deg, #8bd8ff 0%, #63bfff 100%);
+  font-weight: 800;
 }
 
 @media (min-width: 700px) {

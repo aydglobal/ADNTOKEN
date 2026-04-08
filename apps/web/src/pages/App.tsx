@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, useRef, type PointerEvent } from 'react';
 import type {
   ActiveBoost,
   AirdropDashboard,
@@ -176,11 +176,13 @@ export default function App() {
     stats: missionStats,
   });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
-  const tapThrottleRef = useRef<number>(0);
   const tapFlushTimerRef = useRef<number | null>(null);
   const pendingTapCountRef = useRef(0);
   const pendingTapGainRef = useRef(0);
   const tapRequestInFlightRef = useRef(false);
+  const latestEnergyRef = useRef(0);
+  const latestTapNonceRef = useRef(0);
+  const latestLevelRef = useRef(1);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -248,6 +250,12 @@ export default function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    latestEnergyRef.current = user?.energy ?? 0;
+    latestTapNonceRef.current = user?.tapNonce ?? 0;
+    latestLevelRef.current = user?.level ?? 1;
+  }, [user?.energy, user?.tapNonce, user?.level]);
 
   const refreshAll = async () => {
     if (!token) return;
@@ -444,7 +452,7 @@ export default function App() {
   }
 
   async function flushQueuedTaps() {
-    if (!token || !user || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
+    if (!token || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
 
     tapRequestInFlightRef.current = true;
 
@@ -453,11 +461,12 @@ export default function App() {
     const optimisticGain = pendingTapGainRef.current;
 
     try {
+      const previousLevel = latestLevelRef.current;
       const result = await postJSON<TapResult>(
         '/api/game/tap',
         {
           taps: tapsToSend,
-          clientNonce: user.tapNonce ?? 0
+          clientNonce: latestTapNonceRef.current
         },
         token
       );
@@ -482,11 +491,18 @@ export default function App() {
         };
       });
 
+      latestEnergyRef.current = typeof result.energy === 'number'
+        ? result.energy
+        : Math.max(0, latestEnergyRef.current - tapsToSend);
+      latestTapNonceRef.current = result.tapNonce ?? latestTapNonceRef.current;
+
       pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
 
-      if (user.level && result.level && shouldShowLevelUp(user.level, result.level)) {
+      if (result.level && shouldShowLevelUp(previousLevel, result.level)) {
         gameBus.emit('level_up', { level: result.level });
       }
+
+      latestLevelRef.current = result.level ?? latestLevelRef.current;
     } catch {
       setUser((prev: any) => {
         if (!prev) return prev;
@@ -496,6 +512,8 @@ export default function App() {
           energy: Math.min(prev.maxEnergy, prev.energy + tapsToSend)
         };
       });
+
+      latestEnergyRef.current += tapsToSend;
 
       pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
     } finally {
@@ -509,12 +527,8 @@ export default function App() {
     }
   }
 
-  async function handleTap(event: MouseEvent<HTMLButtonElement>) {
-    if (!token || !user || user.energy <= 0) return;
-
-    const now = Date.now();
-    if (now - tapThrottleRef.current < 55) return;
-    tapThrottleRef.current = now;
+  async function handleTap(event: PointerEvent<HTMLButtonElement>) {
+    if (!token || !user || latestEnergyRef.current <= 0) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
@@ -538,6 +552,7 @@ export default function App() {
 
     pendingTapCountRef.current += 1;
     pendingTapGainRef.current += totalGain;
+    latestEnergyRef.current = Math.max(0, latestEnergyRef.current - 1);
 
     setUser((prev: any) =>
       prev
@@ -555,7 +570,7 @@ export default function App() {
 
     tapFlushTimerRef.current = window.setTimeout(() => {
       void flushQueuedTaps();
-    }, 90);
+    }, 45);
   }
 
   async function handleDailyClaim() {
@@ -1554,7 +1569,7 @@ function MineSection({
           <TapMotionButton
             type="button"
             className="adn-tap-btn"
-            onClick={onTap}
+            onPointerDown={onTap}
             disabled={user.energy <= 0}
             energy={user.energy}
             busy={false}
