@@ -1,1 +1,0 @@
-export function smartNotify(user){ return 'Come back bonus ready!'; }

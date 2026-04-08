@@ -1,1 +1,0 @@
-export function scoreFraud(user){ return Math.random()*100; }

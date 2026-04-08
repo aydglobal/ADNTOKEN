@@ -1,1 +1,0 @@
-export function rewardUser(user){ return { coins: 50 }; }

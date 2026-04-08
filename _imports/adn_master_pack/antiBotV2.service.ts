@@ -1,1 +1,0 @@
-export function detectBot(user){ return false; }

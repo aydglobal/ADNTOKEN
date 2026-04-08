@@ -1,1 +1,0 @@
-export function calculateAirdrop(user){ return user.score * 0.1; }

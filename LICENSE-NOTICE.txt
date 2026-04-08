@@ -1,3 +1,0 @@
-Bu starter proje, özgün kullanım için hazırlanmıştır.
-Herhangi bir üçüncü taraf oyun/app'in birebir kopyası değildir.
-Marka, görsel, isim, metin ve varlıkları kendinize ait olacak şekilde değiştirin.

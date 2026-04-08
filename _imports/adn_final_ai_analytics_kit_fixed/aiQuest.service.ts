@@ -1,1 +1,0 @@
-export function generateQuest(user){ return { type:'referral', target:2 }; }
