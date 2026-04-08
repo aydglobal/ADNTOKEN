@@ -965,7 +965,7 @@ export default function App() {
             <TasksSection
               daily={daily}
               user={user}
-              airdropTasks={dashboard.tasks}
+              airdropTasks={dashboard?.tasks ?? []}
               missionBoard={missionBoard}
               busyKey={busyKey}
               highlightedMission={highlightedMission}
@@ -1780,6 +1780,7 @@ function TasksSection({
   onOpenMissions?: () => void;
 }) {
   const [taskTab, setTaskTab] = React.useState<'missions' | 'social' | 'airdrop'>('missions');
+  const safeAirdropTasks = airdropTasks ?? [];
 
   const SOCIAL_TASKS = [
     { id: 'tg_channel', icon: '✈️', title: 'Telegram kanalına katıl', reward: 500, url: 'https://t.me/adntoken', code: 'join_telegram' },
@@ -1868,7 +1869,7 @@ function TasksSection({
       {taskTab === 'social' && (
         <div className="adn-task-list">
           {SOCIAL_TASKS.map((task) => {
-            const claimed = airdropTasks.find((t) => t.code === task.code)?.claimed;
+            const claimed = safeAirdropTasks.find((t) => t.code === task.code)?.claimed;
             return (
               <div key={task.id} className={`adn-task-row${claimed ? ' adn-task-row--done' : ''}`}>
                 <div className="adn-task-row__icon" style={{ fontSize: 28 }}>{task.icon}</div>
@@ -1896,7 +1897,7 @@ function TasksSection({
       {/* Airdrop Tab */}
       {taskTab === 'airdrop' && (
         <div className="adn-task-list">
-          {airdropTasks.map((task) => (
+          {safeAirdropTasks.length ? safeAirdropTasks.map((task) => (
             <div key={task.id} className={`adn-task-row${task.claimed ? ' adn-task-row--done' : task.completed ? ' adn-task-row--claimable' : ''}`}>
               <div className="adn-task-row__icon">🪂</div>
               <div className="adn-task-row__body">
@@ -1911,7 +1912,18 @@ function TasksSection({
                 {task.claimed ? '✓' : task.completed ? 'AL' : 'KİLİTLİ'}
               </button>
             </div>
-          ))}
+          )) : (
+            <div className="adn-task-row">
+              <div className="adn-task-row__icon">🪂</div>
+              <div className="adn-task-row__body">
+                <div className="adn-task-row__title">Henüz claim görevi yok</div>
+                <div className="adn-task-row__reward">Yeni görevler profil yüklendiğinde görünecek.</div>
+              </div>
+              <button className="adn-task-btn adn-task-btn--locked" disabled>
+                BEKLE
+              </button>
+            </div>
+          )}
         </div>
       )}
     </section>
