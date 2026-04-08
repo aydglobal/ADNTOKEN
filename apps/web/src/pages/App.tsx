@@ -113,10 +113,9 @@ type ActionCard = {
 
 const TABS: Array<{ key: TabKey; label: string; icon: AppIconName }> = [
   { key: 'mine', label: 'Tap', icon: 'tap' },
-  { key: 'boosts', label: 'Boost', icon: 'boost' },
-  { key: 'tasks', label: 'Gorev', icon: 'ticket' },
-  { key: 'wallet', label: 'Reboot', icon: 'wallet' },
-  { key: 'social', label: 'Ag', icon: 'referral' },
+  { key: 'boosts', label: 'Market', icon: 'boost' },
+  { key: 'tasks', label: 'Kazan', icon: 'ticket' },
+  { key: 'social', label: 'Sosyal', icon: 'referral' },
   { key: 'settings', label: 'Ayar', icon: 'spark' }
 ];
 
@@ -796,7 +795,7 @@ export default function App() {
           </div>
         ) : null}
 
-        <header className="game-header">
+        <header className="game-header adn-header-slim">
           <div className="game-brand">
             <span className="brand-mark brand-mark--sm">
               <img src={tokenImage} alt="ADN Token" className="brand-mark__image" />
@@ -807,19 +806,21 @@ export default function App() {
             </div>
           </div>
 
-          <div className="game-header__stats">
-            <HeaderStat icon="leaderboard" label="Sira" value={`#${userRank}`} />
-            <div className={`game-header-stat${isStreakHighlighted(daily?.streakDay || user.dailyStreak || 0) ? ' game-streak--highlighted' : ''}${isStreakMilestone(daily?.streakDay || user.dailyStreak || 0) ? ' game-streak-milestone' : ''}`}>
-              <span className="game-header-stat__icon">
-                <AppIcon name="fire" size={16} />
-              </span>
-              <div>
-                <span className="game-header-stat__label">Seri</span>
-                <strong className="game-header-stat__value">{`${daily?.streakDay || user.dailyStreak || 0}g`}</strong>
-              </div>
-            </div>
-            <HeaderStat icon="boost" label="Boost" value={activeBoosts.length ? `${activeBoosts.length}x` : '-'} />
-          </div>        </header>
+          {/* Coin sayacı büyük ve merkezi */}
+          <div className="adn-coin-counter">
+            <span className="adn-coin-counter__icon">💎</span>
+            <strong className="adn-coin-counter__value"><AnimatedNumber value={user.coins} compact /></strong>
+            <span className="adn-coin-counter__label">ADN</span>
+          </div>
+
+          <div className="adn-header-chips">
+            <span className="adn-chip">#{userRank}</span>
+            <span className={`adn-chip${isStreakHighlighted(daily?.streakDay || user.dailyStreak || 0) ? ' adn-chip--fire' : ''}`}>
+              🔥{daily?.streakDay || user.dailyStreak || 0}g
+            </span>
+            {activeBoosts.length > 0 && <span className="adn-chip adn-chip--cyan">⚡{activeBoosts.length}x</span>}
+          </div>
+        </header>
 
         {/* XP Bar */}
         <XpBar xp={user.xp ?? user.coins} level={user.level} />
@@ -873,8 +874,8 @@ export default function App() {
             />
           ) : null}
 
-          {isMineTab ? heroSection : null}
-          {isMineTab ? <SystemTicker items={feedItems.slice(0, 4)} /> : null}
+          {isMineTab ? null : heroSection}
+          {isMineTab ? null : <SystemTicker items={feedItems.slice(0, 4)} />}
 
           {activeTab === 'boosts' ? (
             <BoostsSection
@@ -952,7 +953,6 @@ export default function App() {
 
         {!isMineTab ? heroSection : null}
         {!isMineTab ? <SystemTicker items={feedItems.slice(0, 4)} /> : null}
-
         <BottomNavPro
           active={activeTab}
           onChange={(key) => navigateToTab(key as TabKey)}
@@ -1723,70 +1723,142 @@ function TasksSection({
   onMissionClaim: (mission: MissionItem) => Promise<void>;
   onOpenMissions?: () => void;
 }) {
+  const [taskTab, setTaskTab] = React.useState<'missions' | 'social' | 'airdrop'>('missions');
+
+  const SOCIAL_TASKS = [
+    { id: 'tg_channel', icon: '✈️', title: 'Telegram kanalına katıl', reward: 500, url: 'https://t.me/adntoken', code: 'join_telegram' },
+    { id: 'tg_bot', icon: '🤖', title: 'Telegram botu başlat', reward: 300, url: 'https://t.me/adntoken_bot', code: 'start_bot' },
+    { id: 'twitter', icon: '𝕏', title: 'X hesabını takip et', reward: 400, url: 'https://x.com/adntoken', code: 'follow_x' },
+    { id: 'youtube', icon: '▶️', title: 'YouTube kanalına abone ol', reward: 350, url: 'https://youtube.com/@adntoken', code: 'sub_youtube' },
+    { id: 'instagram', icon: '📸', title: 'Instagram\'ı takip et', reward: 300, url: 'https://instagram.com/adntoken', code: 'follow_instagram' },
+  ];
+
   return (
-    <>
-      <section className="game-section">
-        <div className="game-section__head">
-          <div>
-            <span className="game-eyebrow">Progression</span>
-            <h3 className="game-section__title">Mission Engine</h3>
-            <p className="game-section__description">Checklist hissi yerine canli progress, pulse ve claim odagi.</p>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {onOpenMissions && (
-              <button className="game-button game-button--soft" onClick={onOpenMissions}>
-                Gunluk Gorevler
-              </button>
-            )}
-            <button className="game-button" disabled={!daily?.canClaim || Boolean(busyKey)} onClick={onDailyClaim}>
-              {busyKey === 'daily' ? 'Isleniyor...' : daily?.canClaim ? 'Gunluk odulu al' : 'Gunluk bekliyor'}
+    <section className="game-section" style={{ padding: '14px 12px' }}>
+      {/* Başlık */}
+      <div style={{ textAlign: 'center', marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontFamily: 'var(--adn-title-font)', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', color: '#F3F7FB' }}>
+          Kazan
+        </h2>
+      </div>
+
+      {/* Kategori Tab'ları */}
+      <div className="adn-task-tabs">
+        {([
+          { key: 'missions', label: 'Görevler', icon: '✅' },
+          { key: 'social', label: 'Sosyal', icon: '🌐' },
+          { key: 'airdrop', label: 'Airdrop', icon: '🪂' },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            className={`adn-task-tab${taskTab === tab.key ? ' adn-task-tab--active' : ''}`}
+            onClick={() => setTaskTab(tab.key)}
+          >
+            <span className="adn-task-tab__icon">{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Görevler Tab */}
+      {taskTab === 'missions' && (
+        <div className="adn-task-list">
+          {/* Günlük ödül */}
+          <div className={`adn-task-row${daily?.canClaim ? ' adn-task-row--claimable' : ''}`}>
+            <div className="adn-task-row__icon">🎁</div>
+            <div className="adn-task-row__body">
+              <div className="adn-task-row__title">Günlük Ödül</div>
+              <div className="adn-task-row__reward">⭐ {fmt(daily?.nextReward || 0)} ADN</div>
+            </div>
+            <button
+              className={`adn-task-btn${daily?.canClaim ? ' adn-task-btn--go' : ' adn-task-btn--done'}`}
+              disabled={!daily?.canClaim || Boolean(busyKey)}
+              onClick={onDailyClaim}
+            >
+              {busyKey === 'daily' ? '...' : daily?.canClaim ? 'AL' : '✓'}
             </button>
           </div>
+
+          {/* Mission board */}
+          {(missionBoard?.missions || []).map((mission) => {
+            const isClaimable = mission.status === 'completed' && !mission.rewardClaimedAt;
+            const isDone = Boolean(mission.rewardClaimedAt);
+            return (
+              <div key={mission.id} className={`adn-task-row${isClaimable ? ' adn-task-row--claimable' : ''}${isDone ? ' adn-task-row--done' : ''}`}>
+                <div className="adn-task-row__icon">🎯</div>
+                <div className="adn-task-row__body">
+                  <div className="adn-task-row__title">{mission.title}</div>
+                  <div className="adn-task-row__reward">⭐ {fmt(mission.rewardCoins)} ADN</div>
+                  {!isDone && (
+                    <div className="adn-task-row__progress">
+                      <div className="adn-task-row__progress-bar" style={{ width: `${Math.min(100, (mission.progress / mission.targetValue) * 100)}%` }} />
+                    </div>
+                  )}
+                </div>
+                <button
+                  className={`adn-task-btn${isDone ? ' adn-task-btn--done' : isClaimable ? ' adn-task-btn--go' : ' adn-task-btn--locked'}`}
+                  disabled={!isClaimable || Boolean(busyKey)}
+                  onClick={() => onMissionClaim(mission)}
+                >
+                  {isDone ? '✓' : isClaimable ? 'AL' : `${mission.progress}/${mission.targetValue}`}
+                </button>
+              </div>
+            );
+          })}
         </div>
+      )}
 
-        <MotionCard className={`game-daily-card game-daily-card--gold${daily?.canClaim ? ' game-daily-card--claimable' : ''}`} active={daily?.canClaim === true}>
-          <div className="game-task-card__top">
-            <strong>Gunluk odul karti</strong>
-            <span className={`game-pill${daily?.canClaim ? ' is-info' : ''}`}>{daily?.canClaim ? 'Hazir' : 'Beklemede'}</span>
-          </div>
-          <div className="game-daily-card__time">{fmt(daily?.nextReward || 0)} ADN</div>
-          <div className="game-note">Seri {daily?.streakDay || user.dailyStreak || 0}. gun. Claim acildiginda burada kirmizi bildirim noktasiyla desteklenir.</div>
-        </MotionCard>
-
-        <div className="game-grid game-grid--double">
-          <div className="game-panel">
-            <h3 className="game-panel__title">Airdrop operasyonu</h3>
-            <p className="game-panel__description">Acil ve sayisal claim hedefleri burada toplanir.</p>
-            <div className="game-grid game-grid--tasks">
-              {airdropTasks.map((task) => (
-                <AirdropTaskCard
-                  key={task.id}
-                  task={task}
-                  busy={busyKey === `airdrop:${task.code}`}
-                  onClaim={() => onAirdropTask(task.code)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="game-panel">
-            <h3 className="game-panel__title">Operasyon gorevleri</h3>
-            <p className="game-panel__description">{missionBoard?.recommendation.reason || 'Ilerleme durumuna gore gorev akisini surdur.'}</p>
-            <div className="game-grid game-grid--tasks">
-              {(missionBoard?.missions || []).map((mission) => (
-                <MissionCard
-                  key={mission.id}
-                  mission={mission}
-                  highlighted={highlightedMission === mission.id}
-                  busy={busyKey === `mission:${mission.id}`}
-                  onClaim={() => onMissionClaim(mission)}
-                />
-              ))}
-            </div>
-          </div>
+      {/* Sosyal Tab */}
+      {taskTab === 'social' && (
+        <div className="adn-task-list">
+          {SOCIAL_TASKS.map((task) => {
+            const claimed = airdropTasks.find((t) => t.code === task.code)?.claimed;
+            return (
+              <div key={task.id} className={`adn-task-row${claimed ? ' adn-task-row--done' : ''}`}>
+                <div className="adn-task-row__icon" style={{ fontSize: 28 }}>{task.icon}</div>
+                <div className="adn-task-row__body">
+                  <div className="adn-task-row__title">{task.title}</div>
+                  <div className="adn-task-row__reward">⭐ {fmt(task.reward)} ADN</div>
+                </div>
+                <button
+                  className={`adn-task-btn${claimed ? ' adn-task-btn--done' : ' adn-task-btn--go'}`}
+                  onClick={() => {
+                    if (!claimed) {
+                      window.open(task.url, '_blank');
+                      onAirdropTask(task.code);
+                    }
+                  }}
+                >
+                  {claimed ? '✓' : 'GİT'}
+                </button>
+              </div>
+            );
+          })}
         </div>
-      </section>
-    </>
+      )}
+
+      {/* Airdrop Tab */}
+      {taskTab === 'airdrop' && (
+        <div className="adn-task-list">
+          {airdropTasks.map((task) => (
+            <div key={task.id} className={`adn-task-row${task.claimed ? ' adn-task-row--done' : task.completed ? ' adn-task-row--claimable' : ''}`}>
+              <div className="adn-task-row__icon">🪂</div>
+              <div className="adn-task-row__body">
+                <div className="adn-task-row__title">{task.title}</div>
+                <div className="adn-task-row__reward">⭐ {fmt(task.rewardPoints)} ADN</div>
+              </div>
+              <button
+                className={`adn-task-btn${task.claimed ? ' adn-task-btn--done' : task.completed ? ' adn-task-btn--go' : ' adn-task-btn--locked'}`}
+                disabled={task.claimed || !task.completed || Boolean(busyKey)}
+                onClick={() => onAirdropTask(task.code)}
+              >
+                {task.claimed ? '✓' : task.completed ? 'AL' : 'KİLİTLİ'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
