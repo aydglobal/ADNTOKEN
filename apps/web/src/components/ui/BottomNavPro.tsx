@@ -17,81 +17,34 @@ type Props = {
 
 export function BottomNavPro({ items, active, onChange }: Props) {
   return (
-    <nav style={{
-      position: 'fixed',
-      bottom: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: 'min(100%, 760px)',
-      zIndex: 40,
-      borderRadius: '0',
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(7,16,42,0.98)',
-      backdropFilter: 'blur(20px)',
-      padding: '8px 10px 12px',
-      boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
-    }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${items.length}, 1fr)`,
-        gap: 6,
-      }}>
+    <nav className="adn-bottom-dock" aria-label="Primary navigation">
+      <div className="adn-bottom-dock__inner">
         {items.map((item) => {
           const isActive = active === item.key;
+          const badgeText = item.badgeCount && item.badgeCount > 9 ? '9+' : item.badgeCount?.toString();
+          const ariaLabel = item.badge && badgeText
+            ? `${item.label}, ${badgeText} pending`
+            : item.label;
+
           return (
             <motion.button
               key={item.key}
-              whileTap={{ scale: 0.92 }}
+              type="button"
+              whileTap={{ scale: 0.94 }}
+              className={`adn-bottom-dock__item${isActive ? ' is-active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={ariaLabel}
               onClick={() => onChange(item.key)}
-              style={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 58,
-                borderRadius: 16,
-                border: 'none',
-                background: isActive ? 'linear-gradient(180deg, rgba(255,212,74,0.22), rgba(255,255,255,0.08))' : 'transparent',
-                color: isActive ? '#FFE082' : 'rgba(255,255,255,0.58)',
-                cursor: 'pointer',
-                padding: '6px 4px 4px',
-                transition: 'color 150ms ease, background 150ms ease',
-              }}
             >
-              <div style={{ position: 'relative', fontSize: 20, lineHeight: 1 }}>
+              <span className="adn-bottom-dock__icon">
                 {item.icon}
                 {item.badge && (
-                  <span style={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -6,
-                    minWidth: item.badgeCount && item.badgeCount > 1 ? 16 : 8,
-                    height: item.badgeCount && item.badgeCount > 1 ? 16 : 8,
-                    borderRadius: 999,
-                    background: '#FF5EA8',
-                    boxShadow: '0 0 8px rgba(255,94,168,0.7)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 9,
-                    fontWeight: 800,
-                    color: '#fff',
-                    padding: item.badgeCount && item.badgeCount > 1 ? '0 3px' : 0,
-                  }}>
-                    {item.badgeCount && item.badgeCount > 1 ? item.badgeCount : ''}
+                  <span className="adn-bottom-dock__badge">
+                    {badgeText && badgeText !== '1' ? badgeText : ''}
                   </span>
                 )}
-              </div>
-              <div style={{
-                marginTop: 4,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}>
-                {item.label}
-              </div>
+              </span>
+              <span className="adn-bottom-dock__label">{item.label}</span>
             </motion.button>
           );
         })}

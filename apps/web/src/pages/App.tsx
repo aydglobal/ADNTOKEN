@@ -112,12 +112,12 @@ type ActionCard = {
 };
 
 const TABS: Array<{ key: TabKey; label: string; icon: AppIconName }> = [
-  { key: 'mine', label: 'Ana', icon: 'tap' },
-  { key: 'boosts', label: 'Market', icon: 'boost' },
-  { key: 'tasks', label: 'Görev', icon: 'ticket' },
-  { key: 'wallet', label: 'Cüzdan', icon: 'wallet' },
-  { key: 'social', label: 'Ekip', icon: 'referral' },
-  { key: 'settings', label: 'Ayar', icon: 'spark' }
+  { key: 'mine', label: 'Home', icon: 'tap' },
+  { key: 'boosts', label: 'Shop', icon: 'boost' },
+  { key: 'tasks', label: 'Tasks', icon: 'ticket' },
+  { key: 'wallet', label: 'Claim', icon: 'wallet' },
+  { key: 'social', label: 'Friends', icon: 'referral' },
+  { key: 'settings', label: 'Menu', icon: 'spark' }
 ];
 
 const CORE_PARTICLES = [
@@ -177,6 +177,10 @@ export default function App() {
   });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
   const tapThrottleRef = useRef<number>(0);
+  const tapFlushTimerRef = useRef<number | null>(null);
+  const pendingTapCountRef = useRef(0);
+  const pendingTapGainRef = useRef(0);
+  const tapRequestInFlightRef = useRef(false);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -235,6 +239,14 @@ export default function App() {
       setNow(Date.now());
     }, 5000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tapFlushTimerRef.current) {
+        window.clearTimeout(tapFlushTimerRef.current);
+      }
+    };
   }, []);
 
   const refreshAll = async () => {
@@ -431,60 +443,119 @@ export default function App() {
     setOnboardingStep(stepOrder[Math.min(idx + 1, stepOrder.length - 1)]);
   }
 
+  async function flushQueuedTaps() {
+    if (!token || !user || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
+
+    tapRequestInFlightRef.current = true;
+
+    const tapsToSend = pendingTapCountRef.current;
+    pendingTapCountRef.current = 0;
+    const optimisticGain = pendingTapGainRef.current;
+
+    try {
+      const result = await postJSON<TapResult>(
+        '/api/game/tap',
+        {
+          taps: tapsToSend,
+          clientNonce: user.tapNonce ?? 0
+        },
+        token
+      );
+
+      setUser((prev: any) => {
+        if (!prev) return prev;
+
+        const safeCoins = Math.max(prev.coins, result.coins);
+        const safeEnergy = typeof result.energy === 'number'
+          ? result.energy
+          : Math.max(0, prev.energy - tapsToSend);
+
+        return {
+          ...prev,
+          coins: safeCoins,
+          energy: safeEnergy,
+          maxEnergy: result.energyMax ?? prev.maxEnergy,
+          level: result.level ?? prev.level,
+          tapNonce: result.tapNonce ?? prev.tapNonce,
+          tapMultiplier: result.tapMultiplier ?? prev.tapMultiplier,
+          passiveIncomePerHour: result.passiveIncomePerHour ?? prev.passiveIncomePerHour
+        };
+      });
+
+      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
+
+      if (user.level && result.level && shouldShowLevelUp(user.level, result.level)) {
+        gameBus.emit('level_up', { level: result.level });
+      }
+    } catch {
+      setUser((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          coins: Math.max(0, prev.coins - optimisticGain),
+          energy: Math.min(prev.maxEnergy, prev.energy + tapsToSend)
+        };
+      });
+
+      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
+    } finally {
+      tapRequestInFlightRef.current = false;
+
+      if (pendingTapCountRef.current > 0) {
+        tapFlushTimerRef.current = window.setTimeout(() => {
+          void flushQueuedTaps();
+        }, 80);
+      }
+    }
+  }
+
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
 
-    // Throttle: 250ms — hızlı tap'lerde race condition önle
     const now = Date.now();
-    if (now - tapThrottleRef.current < 250) return;
+    if (now - tapThrottleRef.current < 55) return;
     tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
-    const baseGain = Math.max(1, user.tapPower);
-    const isCrit = Math.random() < 0.05;
+    const perTapGain = Math.max(
+      1,
+      Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier)
+    );
 
-    pushBurst(`+${fmt(baseGain)}`, x, y, 'gold');
-    if (isCrit) pushBurst(`CRIT!`, x, y - 30, 'pink');
+    const isCrit = Math.random() < 0.06;
+    const totalGain = isCrit ? Math.round(perTapGain * 2) : perTapGain;
+
+    pushBurst(`+${fmt(totalGain)}`, x, y, 'gold');
+    if (isCrit) pushBurst('CRIT!', x, y - 30, 'pink');
 
     triggerImpact('tap');
     playSoftClick();
     playHaptic('light');
     registerTap();
 
-    // Optimistic update — coin sadece artar, hiç düşmez
-    const prevEnergy = user.energy;
-    const prevCoins = user.coins;
-    setUser((prev: any) => prev ? {
-      ...prev,
-      coins: prev.coins + baseGain,
-      energy: Math.max(0, prev.energy - 1),
-    } : prev);
+    pendingTapCountRef.current += 1;
+    pendingTapGainRef.current += totalGain;
 
-    try {
-      const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
-      // API sonucu — coin hiçbir zaman düşmesin, sadece yükselebilir
-      setUser((prev: any) => prev ? {
-        ...prev,
-        coins: Math.max(prev.coins, result.coins),
-        energy: result.energy,
-        maxEnergy: result.energyMax ?? prev.maxEnergy,
-        level: result.level,
-        tapNonce: result.tapNonce ?? prev.tapNonce,
-      } : prev);
-      if (shouldShowLevelUp(user.level ?? 1, result.level)) {
-        gameBus.emit('level_up', { level: result.level });
-      }
-    } catch {
-      // API hata verdi — optimistic update'i geri al
-      setUser((prev: any) => prev ? {
-        ...prev,
-        coins: prevCoins,
-        energy: prevEnergy,
-      } : prev);
+    setUser((prev: any) =>
+      prev
+        ? {
+            ...prev,
+            coins: prev.coins + totalGain,
+            energy: Math.max(0, prev.energy - 1)
+          }
+        : prev
+    );
+
+    if (tapFlushTimerRef.current) {
+      window.clearTimeout(tapFlushTimerRef.current);
     }
+
+    tapFlushTimerRef.current = window.setTimeout(() => {
+      void flushQueuedTaps();
+    }, 90);
   }
 
   async function handleDailyClaim() {
@@ -732,8 +803,8 @@ export default function App() {
       <div className="game-hero__intro">
         <div className="game-hero__headline">
           <span className="game-eyebrow">Canli operasyon kati</span>
-          <h2 className="game-hero__title">Akisi kur, ADN'yi buyut.</h2>
-          <p className="game-hero__subtitle">{phase.theme} {phase.tone}</p>
+          <h2 className="game-hero__title">Tap. Build. Claim.</h2>
+          <p className="game-hero__subtitle">Kısa, net ve premium oyun akışı.</p>
 
           <div className={`game-ticker${isDangerWindow(topEvent, now) ? ' is-danger' : ''}`}>
             <span className="game-ticker__dot" />
@@ -943,7 +1014,7 @@ export default function App() {
           {activeTab === 'settings' ? (
             <div className="game-section">
               <div className="game-section__head">
-                <h2 className="game-section__title">Ayarlar</h2>
+                <h2 className="game-section__title">Menu</h2>
               </div>
               <FeedbackSettingsCard />
             </div>
@@ -1574,16 +1645,16 @@ function BoostsSection({
 }) {
   const sortedCards = [...(shop?.cards || [])]
     .sort((left, right) => Number(right.unlocked) - Number(left.unlocked))
-    .slice(0, 4);
+    .slice(0, 6);
 
   return (
     <>
       <section className="game-section">
         <div className="game-section__head">
           <div>
-            <span className="game-eyebrow">Boost Floor</span>
-            <h3 className="game-section__title">Hızlı Boostlar</h3>
-            <p className="game-section__description">Kısa ve net kartlarla güç al, alttan marketi geliştir.</p>
+            <span className="game-eyebrow">Boosts</span>
+            <h3 className="game-section__title">Boost Center</h3>
+            <p className="game-section__description">Hızlı güçlendirmeler ve net fiyatlar.</p>
           </div>
           <span className="game-pill is-success">{user.boosts?.length ? `${user.boosts.length} aktif` : 'Hazir'}</span>
         </div>
@@ -1648,7 +1719,7 @@ function BoostsSection({
           <div>
             <span className="game-eyebrow">Market</span>
             <h3 className="game-section__title">Market</h3>
-            <p className="game-section__description">Tek bakışta fiyat, gelir ve sonraki seviye.</p>
+            <p className="game-section__description">Kısa kartlar, tek bakışta seviye ve fiyat.</p>
           </div>
         </div>
 
@@ -1723,16 +1794,16 @@ function TasksSection({
       {/* Başlık */}
       <div style={{ textAlign: 'center', marginBottom: 12 }}>
         <h2 style={{ margin: 0, fontFamily: 'var(--adn-title-font)', fontSize: 'clamp(1.1rem, 4vw, 1.4rem)', color: 'var(--adn-text)' }}>
-          Kazan
+          Tasks
         </h2>
       </div>
 
       {/* Kategori Tab'ları */}
       <div className="adn-task-tabs">
         {([
-          { key: 'missions', label: 'Görevler', icon: '✅' },
-          { key: 'social', label: 'Sosyal', icon: '🌐' },
-          { key: 'airdrop', label: 'Airdrop', icon: '🪂' },
+          { key: 'missions', label: 'Daily', icon: '✅' },
+          { key: 'social', label: 'Social', icon: '🌐' },
+          { key: 'airdrop', label: 'Claim', icon: '🪂' },
         ] as const).map((tab) => (
           <button
             key={tab.key}
@@ -1765,7 +1836,7 @@ function TasksSection({
           </div>
 
           {/* Mission board */}
-          {(missionBoard?.missions || []).slice(0, 5).map((mission) => {
+          {(missionBoard?.missions || []).map((mission) => {
             const isClaimable = mission.status === 'completed' && !mission.rewardClaimedAt;
             const isDone = Boolean(mission.rewardClaimedAt);
             return (
@@ -1796,7 +1867,7 @@ function TasksSection({
       {/* Sosyal Tab */}
       {taskTab === 'social' && (
         <div className="adn-task-list">
-          {SOCIAL_TASKS.slice(0, 5).map((task) => {
+          {SOCIAL_TASKS.map((task) => {
             const claimed = airdropTasks.find((t) => t.code === task.code)?.claimed;
             return (
               <div key={task.id} className={`adn-task-row${claimed ? ' adn-task-row--done' : ''}`}>
@@ -1825,7 +1896,7 @@ function TasksSection({
       {/* Airdrop Tab */}
       {taskTab === 'airdrop' && (
         <div className="adn-task-list">
-          {airdropTasks.slice(0, 5).map((task) => (
+          {airdropTasks.map((task) => (
             <div key={task.id} className={`adn-task-row${task.claimed ? ' adn-task-row--done' : task.completed ? ' adn-task-row--claimable' : ''}`}>
               <div className="adn-task-row__icon">🪂</div>
               <div className="adn-task-row__body">
@@ -2004,9 +2075,9 @@ function WalletSection({
       <section className="game-section">
         <div className="game-section__head">
           <div>
-            <span className="game-eyebrow">Meta Layer</span>
-            <h3 className="game-section__title">RBRT / Reboot System</h3>
-            <p className="game-section__description">Buyuk oduller burada patlar: claim, chest ve prestige ayni eksende toplandi.</p>
+            <span className="game-eyebrow">Claim</span>
+            <h3 className="game-section__title">Claim & Prestige</h3>
+            <p className="game-section__description">Cüzdan, chest ve prestige tek ekranda.</p>
           </div>
         </div>
 
@@ -2061,14 +2132,14 @@ function WalletSection({
       <section className="game-section">
         <div className="game-section__head">
           <div>
-            <span className="game-eyebrow">Vault</span>
-            <h3 className="game-section__title">Cache acilisi</h3>
-            <p className="game-section__description">Hazir chest'ler claim hissini buyuten ikinci dopamin halkasi olur.</p>
+            <span className="game-eyebrow">Rewards</span>
+            <h3 className="game-section__title">Chest Vault</h3>
+            <p className="game-section__description">Hazır ödülleri hızlı aç.</p>
           </div>
         </div>
 
         <div className="game-grid game-grid--tasks">
-          {(chestVault?.items || []).slice(0, 4).map((item) => (
+          {(chestVault?.items || []).map((item) => (
             <div key={item.id} className={`game-task-card${item.status === 'ready' ? ' is-claimable' : ''}`}>
               <div className="game-task-card__top">
                 <span className="game-task-card__reward">{item.rarity.toUpperCase()}</span>
@@ -2191,13 +2262,13 @@ function SocialSection({
         <div className="game-section__head">
           <div>
             <span className="game-eyebrow">Canli siralama</span>
-            <h3 className="game-section__title">Sıralama</h3>
-            <p className="game-section__description">Sadece en önemli 5 oyuncu gösterilir.</p>
+            <h3 className="game-section__title">Mini leaderboard</h3>
+            <p className="game-section__description">Siralama hareketi ve online his ana oyunu daha sosyal hale getirir.</p>
           </div>
         </div>
 
         <div className="game-list">
-          {leaderboard.slice(0, 5).map((entry, index) => (
+          {leaderboard.slice(0, 8).map((entry, index) => (
             <div
               key={entry.id}
               className={`game-leaderboard-row${index === 0 ? ' game-leaderboard-row--gold' : ''}${index === 1 ? ' game-leaderboard-row--silver' : ''}${index === 2 ? ' game-leaderboard-row--bronze' : ''}${entry.id === currentUserId ? ' game-leaderboard-row--self' : ''}`}

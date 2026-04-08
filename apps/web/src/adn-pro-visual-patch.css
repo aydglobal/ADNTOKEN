@@ -1222,12 +1222,6 @@ body[data-low-perf="true"] .game-dock__badge {
   cursor: pointer;
   backdrop-filter: blur(16px);
 }
-  font-size: 15px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.9);
-  cursor: pointer;
-  backdrop-filter: blur(16px);
-}
 
 /* INFO GRID */
 .adn-opening-info-grid {

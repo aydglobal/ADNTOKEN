@@ -8,6 +8,24 @@ const localApiTarget = 'http://127.0.0.1:4000';
 export default defineConfig({
   base: './',
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/src/admin/')) {
+            return 'admin';
+          }
+
+          if (id.includes('node_modules')) {
+            if (id.includes('framer-motion')) return 'motion';
+            if (id.includes('@fingerprintjs')) return 'fingerprint';
+            if (id.includes('react') || id.includes('scheduler')) return 'react-vendor';
+            return 'vendor';
+          }
+        }
+      }
+    }
+  },
   test: {
     environment: 'node',
     exclude: ['dist/**', 'node_modules/**'],
