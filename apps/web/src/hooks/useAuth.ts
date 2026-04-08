@@ -99,7 +99,7 @@ export function useAuth() {
           if (!initData) {
             setIsTelegramAvailable(false);
             return loginWithPreview(setToken, setUser).catch((previewError) => {
-              setError('Preview oturumu baslatilamadi. API baglantisini kontrol et.');
+              setError('Sunucu baglantisi kurulamadi. Lutfen tekrar dene.');
               throw previewError;
             });
           }

@@ -4,9 +4,14 @@ function resolveApiUrl() {
   const configured = import.meta.env.VITE_API_URL?.trim();
   if (configured) return configured.replace(/\/$/, '');
 
-  const host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') {
-    return 'http://127.0.0.1:4000';
+  // Render static site veya production — direkt API URL
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://127.0.0.1:4000';
+    }
+    // Her türlü production ortamı için hardcoded API
+    return PRODUCTION_API_URL;
   }
 
   return PRODUCTION_API_URL;
