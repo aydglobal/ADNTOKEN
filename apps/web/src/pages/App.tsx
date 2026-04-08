@@ -776,7 +776,7 @@ export default function App() {
       </div>
 
       <div className="game-hero__stats">
-        <HeroStat icon="coin" label="Toplam ADN" value={<AnimatedNumber value={user.coins} compact />} note="Tap, market ve gorevler bu havuzdan beslenir." tone="gold" />
+        <HeroStat icon="coin" label="Toplam ADN" value={<AnimatedNumber value={user.coins} />} note="Tap, market ve gorevler bu havuzdan beslenir." tone="gold" />
         <HeroStat icon="chart" label="Saatlik uretim" value={<><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</>} note="Market ve boost hamleleri dogrudan bu hizi artirir." tone="cyan" />
         <HeroStat icon="wallet" label="Claim bar" value={`${Math.round(claimPercent)}%`} note={dashboard.summary.claimable ? 'Claim kilidi acildi.' : 'Airdrop ilerlemesi yukseliyor.'} tone="pink" />
       </div>
@@ -807,7 +807,7 @@ export default function App() {
           {/* Coin sayacı büyük ve merkezi */}
           <div className="adn-coin-counter">
             <span className="adn-coin-counter__icon">💎</span>
-            <strong className="adn-coin-counter__value"><AnimatedNumber value={user.coins} compact /></strong>
+            <strong className="adn-coin-counter__value"><AnimatedNumber value={user.coins} /></strong>
             <span className="adn-coin-counter__label">ADN</span>
           </div>
 
@@ -827,7 +827,7 @@ export default function App() {
         <div className="adn-balance-strip">
           <div className="adn-balance-strip__item adn-balance-strip__item--gold">
             <span className="adn-balance-strip__label">ADN</span>
-            <strong className="adn-balance-strip__value"><AnimatedNumber value={user.coins} compact /></strong>
+            <strong className="adn-balance-strip__value"><AnimatedNumber value={user.coins} /></strong>
           </div>
           <div className="adn-balance-strip__divider" />
           <div className="adn-balance-strip__item">
@@ -872,7 +872,6 @@ export default function App() {
             />
           ) : null}
 
-          {isMineTab ? null : heroSection}
           {isMineTab ? null : <SystemTicker items={feedItems.slice(0, 4)} />}
 
           {activeTab === 'boosts' ? (
@@ -949,8 +948,6 @@ export default function App() {
           </ScreenTransition>
         </main>
 
-        {!isMineTab ? heroSection : null}
-        {!isMineTab ? <SystemTicker items={feedItems.slice(0, 4)} /> : null}
         <BottomNavPro
           active={activeTab}
           onChange={(key) => navigateToTab(key as TabKey)}

@@ -2,26 +2,26 @@
 
 :root {
   /* Master Pack Design Tokens */
-  --bg-primary: #07111F;
-  --bg-secondary: #0B1220;
-  --surface-deep: rgba(255,255,255,0.06);
-  --surface-glass: rgba(255,255,255,0.08);
-  --surface-elevated: rgba(255,255,255,0.12);
-  --border-soft: rgba(255,255,255,0.10);
-  --border-active: rgba(56,189,248,0.38);
+  --bg-primary: #060D1A;
+  --bg-secondary: #091526;
+  --surface-deep: rgba(255,255,255,0.05);
+  --surface-glass: rgba(255,255,255,0.09);
+  --surface-elevated: rgba(255,255,255,0.14);
+  --border-soft: rgba(255,255,255,0.12);
+  --border-active: rgba(56,189,248,0.45);
   --accent-primary: #38BDF8;
   --accent-secondary: #60A5FA;
-  --accent-premium: #D6B25E;
+  --accent-premium: #F0C040;
   --color-success: #34D399;
   --color-warning: #FB7185;
-  --text-primary: #F3F7FB;
-  --text-secondary: #A6B4C3;
-  --text-muted: #6E8097;
+  --text-primary: #EEF4FF;
+  --text-secondary: #8FA8C8;
+  --text-muted: #5A7A9A;
 
   /* Legacy aliases */
   --adn-bg: var(--bg-primary);
-  --adn-panel: rgba(11,18,32,0.88);
-  --adn-panel-strong: rgba(7,17,31,0.94);
+  --adn-panel: rgba(8,16,30,0.90);
+  --adn-panel-strong: rgba(5,12,24,0.96);
   --adn-panel-border: var(--border-soft);
   --adn-gold: var(--accent-premium);
   --adn-orange: #fb923c;
@@ -35,10 +35,16 @@
   --adn-body-font: 'Space Grotesk', 'Segoe UI', sans-serif;
 
   /* Shadows */
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.18);
-  --shadow-card: 0 12px 36px rgba(0,0,0,0.28);
-  --glow-cyan: 0 0 30px rgba(56,189,248,0.22);
-  --glow-gold: 0 0 30px rgba(214,178,94,0.18);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.22);
+  --shadow-card: 0 12px 36px rgba(0,0,0,0.32);
+  --glow-cyan: 0 0 30px rgba(56,189,248,0.25);
+  --glow-gold: 0 0 30px rgba(240,192,64,0.22);
+
+  /* Glass surface */
+  --glass-bg: rgba(255,255,255,0.07);
+  --glass-border: rgba(255,255,255,0.14);
+  --glass-blur: blur(20px);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 * {
@@ -58,10 +64,10 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   background:
-    radial-gradient(circle at 18% 0%, rgba(56,189,248,0.12), transparent 28%),
-    radial-gradient(circle at 84% 14%, rgba(214,178,94,0.1), transparent 24%),
-    radial-gradient(circle at 50% 100%, rgba(139,92,246,0.1), transparent 30%),
-    linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+    radial-gradient(circle at 18% 0%, rgba(56,189,248,0.10), transparent 28%),
+    radial-gradient(circle at 84% 14%, rgba(240,192,64,0.08), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(139,92,246,0.08), transparent 30%),
+    linear-gradient(180deg, #060D1A 0%, #091526 50%, #060D1A 100%);
   overflow-x: hidden;
 }
 
@@ -1434,25 +1440,32 @@ textarea {
 .game-daily-card {
   padding: 16px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .game-daily-card--claimable {
-  border: 2px solid var(--adn-gold);
+  border: 2px solid var(--adn-gold) !important;
   box-shadow: 0 0 22px rgba(255, 221, 0, 0.2);
   animation: gameClaimPulse 1.8s ease-in-out infinite;
 }
 
 .game-daily-card--gold {
-  background: linear-gradient(180deg, rgba(255, 204, 87, 0.18), rgba(255, 255, 255, 0.04));
+  background: rgba(255, 204, 87, 0.14);
+  border-color: rgba(255, 204, 87, 0.28) !important;
 }
 
 .game-daily-card--cyan {
-  background: linear-gradient(180deg, rgba(82, 229, 255, 0.18), rgba(255, 255, 255, 0.04));
+  background: rgba(82, 229, 255, 0.12);
+  border-color: rgba(82, 229, 255, 0.24) !important;
 }
 
 .game-daily-card--pink {
-  background: linear-gradient(180deg, rgba(255, 90, 191, 0.16), rgba(255, 255, 255, 0.04));
+  background: rgba(255, 90, 191, 0.12);
+  border-color: rgba(255, 90, 191, 0.22) !important;
 }
 
 .game-daily-card__time {
@@ -1552,12 +1565,13 @@ textarea {
   position: relative;
   overflow: hidden;
   margin-top: 16px;
-  padding: 18px;
-  border-radius: 30px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(54, 239, 255, 0.08), transparent 22%),
-    radial-gradient(circle at 0% 100%, rgba(255, 77, 196, 0.08), transparent 26%),
-    linear-gradient(180deg, rgba(27, 22, 71, 0.92), rgba(12, 18, 46, 0.96));
+  padding: 20px;
+  border-radius: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
 }
 
 .game-section__head {
@@ -1606,7 +1620,11 @@ textarea {
 .game-task-card,
 .game-active-boost,
 .game-leaderboard-row {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
 }
 
 .game-metric-card {
@@ -1661,7 +1679,7 @@ textarea {
 .game-task-card,
 .game-active-boost,
 .game-leaderboard-row {
-  padding: 14px;
+  padding: 16px;
   border-radius: 18px;
 }
 
@@ -1672,7 +1690,8 @@ textarea {
 
 .game-task-card h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .game-pill {
@@ -2785,43 +2804,51 @@ textarea {
   display: grid;
   gap: 12px;
   padding: 16px;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  border-radius: 20px;
+  border: 1px solid var(--glass-border) !important;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
 }
 
 .game-market-card.is-locked {
-  opacity: 0.62;
+  opacity: 0.55;
 }
 
 .game-market-card--mining {
-  box-shadow: inset 0 0 0 1px rgba(54, 239, 255, 0.08);
+  border-color: rgba(56, 189, 248, 0.28) !important;
+  background: linear-gradient(160deg, rgba(56,189,248,0.10), rgba(255,255,255,0.05));
 }
 
 .game-market-card--community {
-  box-shadow: inset 0 0 0 1px rgba(255, 122, 48, 0.08);
+  border-color: rgba(255, 122, 48, 0.28) !important;
+  background: linear-gradient(160deg, rgba(255,122,48,0.10), rgba(255,255,255,0.05));
 }
 
 .game-market-card--exchange {
-  box-shadow: inset 0 0 0 1px rgba(255, 210, 80, 0.1);
+  border-color: rgba(240, 192, 64, 0.28) !important;
+  background: linear-gradient(160deg, rgba(240,192,64,0.10), rgba(255,255,255,0.05));
 }
 
 .game-market-card--special {
-  box-shadow: inset 0 0 0 1px rgba(123, 92, 255, 0.12);
+  border-color: rgba(139, 92, 246, 0.28) !important;
+  background: linear-gradient(160deg, rgba(139,92,246,0.10), rgba(255,255,255,0.05));
 }
 
 .game-market-card__meta {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .game-market-card__stat {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--adn-muted);
 }
 
@@ -2830,13 +2857,16 @@ textarea {
 }
 
 .game-boost-card {
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.12), rgba(20, 12, 50, 0.9));
+  border: 1px solid rgba(139, 92, 246, 0.35) !important;
+  background: linear-gradient(160deg, rgba(139,92,246,0.12), rgba(255,255,255,0.04));
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.12), inset 0 1px 0 rgba(255,255,255,0.10);
 }
 
 .game-boost-card--active {
-  border-color: var(--adn-cyan);
-  box-shadow: 0 0 14px rgba(0, 245, 255, 0.3);
+  border-color: var(--adn-cyan) !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.28);
 }
 
 .game-market-card.is-highlighted {

@@ -215,8 +215,15 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
     const gameplay = resolveGameplayState(user, user.ownedUpgrades);
     const effectiveEnergyMax = getEffectiveEnergyMax(gameplay.maxEnergy, boostState.energyMaxBonus);
 
-    // Tap sırasında enerji restore etme — sadece mevcut enerjiyi kullan
-    const currentEnergy = Math.min(user.energy, effectiveEnergyMax);
+    // Tap öncesi birikmiş enerjiyi restore et
+    const regenPerMinute = gameplay.regenPerMinute ?? 1;
+    const { energy: restoredEnergy } = restoreEnergy({
+      currentEnergy: user.energy,
+      lastEnergyAt: user.lastEnergyAt ?? new Date(),
+      energyMax: effectiveEnergyMax,
+      regenPerMinute
+    });
+    const currentEnergy = Math.min(restoredEnergy, effectiveEnergyMax);
 
     if (currentEnergy < totalCost) {
       return {
@@ -267,7 +274,7 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
         level: nextGameplay.level,
         maxEnergy: nextGameplay.maxEnergy,
         offlineCapHours: nextGameplay.offlineCapHours,
-        lastEnergyAt: new Date(), // her tap'te sıfırla — restore birikmesin
+        // lastEnergyAt'i sıfırlama — enerji regen birikmeye devam etsin
         tapNonce: generateTapNonce(),
         lastTapAt: new Date(),
         totalTaps: { increment: antiCheat.tapCount },

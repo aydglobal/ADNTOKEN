@@ -27,10 +27,10 @@ export function BottomNavPro({ items, active, onChange }: Props) {
       borderRadius: '20px 20px 0 0',
       border: '1px solid rgba(255,255,255,0.08)',
       borderBottom: 'none',
-      background: 'rgba(6,10,20,0.96)',
-      backdropFilter: 'blur(20px)',
-      padding: '6px 8px 10px',
-      boxShadow: '0 -2px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+      background: 'rgba(5,10,20,0.97)',
+      backdropFilter: 'blur(24px)',
+      padding: '8px 10px 12px',
+      boxShadow: '0 -4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
     }}>
       <div style={{
         display: 'grid',
@@ -54,10 +54,10 @@ export function BottomNavPro({ items, active, onChange }: Props) {
                 borderRadius: 14,
                 border: 'none',
                 borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
-                background: isActive
-                  ? 'linear-gradient(180deg, rgba(56,189,248,0.18), rgba(139,92,246,0.1))'
+        background: isActive
+                  ? 'linear-gradient(180deg, rgba(56,189,248,0.22), rgba(139,92,246,0.12))'
                   : 'transparent',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.45)',
                 cursor: 'pointer',
                 padding: '6px 4px 4px',
                 transition: 'color 150ms ease, background 150ms ease, border-color 150ms ease',
