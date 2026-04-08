@@ -956,12 +956,20 @@ export default function App() {
         <BottomNavPro
           active={activeTab}
           onChange={(key) => navigateToTab(key as TabKey)}
-          items={TABS.map((tab) => ({
-            key: tab.key,
-            label: tab.label,
-            icon: <AppIcon name={tab.icon} size={20} />,
-            badge: tab.key === 'tasks' && daily?.canClaim === true
-          }))}
+          items={TABS.map((tab) => {
+            // Görev tab'ında tamamlanabilir görev sayısı badge
+            const pendingMissions = tab.key === 'tasks'
+              ? (missionBoard?.missions.filter(m => m.status === 'completed' && !m.rewardClaimedAt).length || 0)
+                + (daily?.canClaim ? 1 : 0)
+              : 0;
+            return {
+              key: tab.key,
+              label: tab.label,
+              icon: <AppIcon name={tab.icon} size={22} />,
+              badge: pendingMissions > 0,
+              badgeCount: pendingMissions > 0 ? pendingMissions : undefined
+            };
+          })}
         />
 
         {rebootFx ? <div className="game-reboot-overlay" /> : null}
@@ -1462,102 +1470,89 @@ function MineSection({
 
   return (
     <>
-      <section className="game-arena">
-        <div className="game-arena__header">
-          <span className="game-eyebrow">Operations</span>
-          <h3 className="game-arena__title">Production Core</h3>
-          <p className="game-arena__subtitle">Lion'a dokun, ADN topla. Glow, pulse ve mikro feedback ile her tap daha canli hissedilir.</p>
-          <span className={`game-arena__badge${isReady ? ' is-ready' : ''}`}>{isReady ? 'READY' : 'Hazir'}</span>
-        </div>
+      <section className="adn-mine-core">
+        {/* Combo göstergesi */}
+        {isComboActive && (
+          <div className="adn-combo-badge">
+            <span>COMBO</span>
+            <strong>x{comboMultiplier.toFixed(1)}</strong>
+          </div>
+        )}
 
-        <div className="game-tapper">
-          <div className={`game-tapper__halo${energyVariant === 'danger' ? ' game-tapper__halo--danger' : ''}`} />
-          <ComboDisplay multiplier={comboMultiplier} count={comboCount} visible={isComboActive} />
+        {/* Aslan + Tap butonu — büyük ve merkezi */}
+        <div className="adn-tap-stage">
+          <div className={`adn-tap-halo${energyVariant === 'danger' ? ' adn-tap-halo--danger' : ''}${isReady ? ' adn-tap-halo--ready' : ''}`} />
           <TapMotionButton
             type="button"
-            className={`game-tapper__button adn-orb-pulse${isReady ? ' is-ready' : ''}`}
+            className="adn-tap-btn"
             onClick={onTap}
             disabled={user.energy <= 0}
             energy={user.energy}
             busy={false}
           >
-            <div className="game-tapper__stage">
-              {CORE_PARTICLES.map((particle) => (
-                <span
-                  key={particle.id}
-                  className="game-core-particle"
-                  style={{ top: particle.top, left: particle.left, animationDelay: particle.delay }}
-                />
-              ))}
-              <img src={lionImage} alt="ADN Lion" className="game-tapper__character" />
-              <div className="game-tapper__platform" />
-              {rewardBursts.map((item) => (
-                <span
-                  key={item.id}
-                  className={`game-tapper__float game-tapper__float--${item.tone}`}
-                  style={{ left: item.x, top: item.y }}
-                >
-                  {item.label}
-                </span>
-              ))}
-              {ripples.map((item) => (
-                <span key={item.id} className="game-tapper__ripple" style={{ left: item.x, top: item.y }} />
-              ))}
+            <img src={lionImage} alt="ADN Lion" className="adn-tap-lion" />
+            <div className="adn-tap-overlay">
+              <span className="adn-tap-label">TAP</span>
             </div>
+            {rewardBursts.map((item) => (
+              <span
+                key={item.id}
+                className={`game-tapper__float game-tapper__float--${item.tone}`}
+                style={{ left: item.x, top: item.y }}
+              >
+                {item.label}
+              </span>
+            ))}
           </TapMotionButton>
         </div>
 
-        <div className="game-energy-row">
-          <div className="game-energy-row__meta">
-            <span className="game-energy-row__title">Enerji sistemi</span>
-            <strong>{fmt(user.energy)} / {fmt(user.maxEnergy)}</strong>
+        {/* Enerji barı — büyük ve belirgin */}
+        <div className="adn-energy-block">
+          <div className="adn-energy-block__header">
+            <span className="adn-energy-block__label">⚡ ENERJİ</span>
+            <span className="adn-energy-block__value">
+              <strong>{fmt(user.energy)}</strong>
+              <span>/{fmt(user.maxEnergy)}</span>
+              <span className="adn-energy-block__pct">{Math.round(energyPercent)}%</span>
+            </span>
           </div>
-          <div className={`game-energy-bar game-energy-bar--${energyVariant}`}>
-            <div className="game-energy-bar__fill" style={{ width: `${energyPercent}%` }} />
+          <div className={`adn-energy-bar adn-energy-bar--${energyVariant}`}>
+            <div className="adn-energy-bar__fill" style={{ width: `${energyPercent}%` }} />
+            {isReady && <div className="adn-energy-bar__ready-glow" />}
           </div>
-          <div className="game-energy-row__legend">
-            <span>Tap kazanci +{fmt(Math.round(user.tapPower * (user.tapMultiplier || 1)))}</span>
-            <span>{isReady ? 'Hazir efekti aktif' : 'Enerji yumusak easing ile doluyor'}</span>
+          <div className="adn-energy-block__footer">
+            <span>+{fmt(Math.round(user.tapPower * (user.tapMultiplier || 1)))} / tap</span>
+            <span>{isReady ? '🟢 Hazır' : 'Yenileniyor...'}</span>
           </div>
         </div>
 
-        <div className="game-daily-grid">
-          <DailyCard
-            tone="gold"
-            icon="fire"
-            title="Gunluk seri"
-            value={`${daily?.streakDay || user.dailyStreak || 0}. gun`}
-            note={daily?.canClaim ? 'Gunluk odul alinabilir durumda.' : `Sonraki odul ${fmt(daily?.nextReward || 0)} ADN.`}
-            history={streakHistory}
-          />
-          <DailyCard
-            tone="cyan"
-            icon="gift"
-            title="Cache Vault"
-            value={`${chestVault?.readyCount || 0} hazir`}
-            note={chestVault?.readyCount ? 'Acilmayi bekleyen cache var.' : 'Yeni chest dusurmek icin ritmi koru.'}
-          />
-          <DailyCard
-            tone="pink"
-            icon="rocket"
-            title="Reboot esigi"
-            value={prestige?.canPrestige ? 'Acik' : `Lv ${user.level}`}
-            note={prestige?.canPrestige ? 'Meta guc artisi icin wallet ekranina gec.' : `Toplam ADN ${formatCompact(dashboard.summary.totalPoints)}.`}
-          />
+        {/* Hızlı stat çipleri */}
+        <div className="adn-stat-chips">
+          <div className="adn-stat-chip adn-stat-chip--gold">
+            <span>💰</span>
+            <div>
+              <div className="adn-stat-chip__label">Saatlik</div>
+              <div className="adn-stat-chip__val"><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</div>
+            </div>
+          </div>
+          <div className="adn-stat-chip adn-stat-chip--cyan">
+            <span>🎯</span>
+            <div>
+              <div className="adn-stat-chip__label">Tap Gücü</div>
+              <div className="adn-stat-chip__val">+{fmt(user.tapPower)}</div>
+            </div>
+          </div>
+          <div className="adn-stat-chip">
+            <span>📦</span>
+            <div>
+              <div className="adn-stat-chip__label">Cache</div>
+              <div className="adn-stat-chip__val">{chestVault?.readyCount || 0} hazır</div>
+            </div>
+          </div>
         </div>
       </section>
-
-      <section className="game-section">
-        <div className="game-section__head">
-          <div>
-            <span className="game-eyebrow">Reactive Data</span>
-            <h3 className="game-section__title">Uretim ritmi</h3>
-            <p className="game-section__description">Tap, combo, kritik sans ve claim akisi tek bakista okunur.</p>
-          </div>
-          <span className="game-pill is-info">Canli guncelleme</span>
-        </div>
-
-        <div className="game-grid game-grid--stats">
+    </>
+  );
           <MetricCard icon="tap" label="Tap getirisi" value={<><AnimatedNumber value={Math.round(user.tapPower * (user.tapMultiplier || 1))} /></>} note="Her vurus bu kadar ADN uretir." />
           <MetricCard icon="chart" label="Pasif kasa" value={<><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</>} note="Market ve boost ile buyur." />
           <MetricCard icon="star" label="Combo" value={`x${(user.comboMultiplier || 1).toFixed(1)}`} note="Ritim arttikca combo hissi buyur." />

@@ -6,6 +6,7 @@ type Item = {
   label: string;
   icon: React.ReactNode;
   badge?: boolean;
+  badgeCount?: number;
 };
 
 type Props = {
@@ -52,29 +53,37 @@ export function BottomNavPro({ items, active, onChange }: Props) {
                 minHeight: 50,
                 borderRadius: 14,
                 border: 'none',
+                borderBottom: isActive ? '2px solid #38bdf8' : '2px solid transparent',
                 background: isActive
-                  ? 'linear-gradient(180deg, rgba(56,189,248,0.2), rgba(139,92,246,0.12))'
+                  ? 'linear-gradient(180deg, rgba(56,189,248,0.18), rgba(139,92,246,0.1))'
                   : 'transparent',
                 color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
                 cursor: 'pointer',
-                padding: '6px 4px',
-                boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 0 16px rgba(56,189,248,0.14)' : 'none',
-                transition: 'color 150ms ease, background 150ms ease',
-              }}
-            >
+                padding: '6px 4px 4px',
+                transition: 'color 150ms ease, background 150ms ease, border-color 150ms ease',
+              }}            >
               <div style={{ position: 'relative', fontSize: 20, lineHeight: 1 }}>
                 {item.icon}
                 {item.badge && (
                   <span style={{
                     position: 'absolute',
-                    top: -3,
-                    right: -4,
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
+                    top: -4,
+                    right: -6,
+                    minWidth: item.badgeCount && item.badgeCount > 1 ? 16 : 8,
+                    height: item.badgeCount && item.badgeCount > 1 ? 16 : 8,
+                    borderRadius: 999,
                     background: '#FF5EA8',
-                    boxShadow: '0 0 8px rgba(255,94,168,0.6)',
-                  }} />
+                    boxShadow: '0 0 8px rgba(255,94,168,0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 9,
+                    fontWeight: 800,
+                    color: '#fff',
+                    padding: item.badgeCount && item.badgeCount > 1 ? '0 3px' : 0,
+                  }}>
+                    {item.badgeCount && item.badgeCount > 1 ? item.badgeCount : ''}
+                  </span>
                 )}
               </div>
               <div style={{

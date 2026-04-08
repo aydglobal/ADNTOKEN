@@ -46,6 +46,37 @@ const DEFAULT_TASKS = [
     title: 'Agina bir operatif bagla',
     description: 'Bir daveti aktif hale getir ve network zincirini baslat.',
     rewardCoins: 1200
+  },
+  // Sosyal görevler
+  {
+    code: 'join_telegram',
+    title: 'Telegram kanalına katıl',
+    description: 'ADN Token Telegram kanalına katıl ve topluluğa dahil ol.',
+    rewardCoins: 500
+  },
+  {
+    code: 'start_bot',
+    title: 'Telegram botu başlat',
+    description: 'ADN Token botunu başlat.',
+    rewardCoins: 300
+  },
+  {
+    code: 'follow_x',
+    title: 'X hesabını takip et',
+    description: 'ADN Token X (Twitter) hesabını takip et.',
+    rewardCoins: 400
+  },
+  {
+    code: 'sub_youtube',
+    title: 'YouTube kanalına abone ol',
+    description: 'ADN Token YouTube kanalına abone ol.',
+    rewardCoins: 350
+  },
+  {
+    code: 'follow_instagram',
+    title: 'Instagram hesabını takip et',
+    description: 'ADN Token Instagram hesabını takip et.',
+    rewardCoins: 300
   }
 ] as const;
 
@@ -561,6 +592,8 @@ function evaluateTaskCompletion(
   if (code === 'claim_daily') return state.dailyStreak >= 1;
   if (code === 'buy_first_card') return state.ownedUpgradeCount >= 1;
   if (code === 'invite_friend') return state.referralCount >= 1;
+  // Sosyal görevler — kullanıcı claim ettiğinde tamamlanmış sayılır
+  if (['join_telegram', 'start_bot', 'follow_x', 'sub_youtube', 'follow_instagram'].includes(code)) return true;
   return false;
 }
 
