@@ -227,9 +227,6 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // now sadece countdown ve event window için — tap sırasında re-render tetiklemesin
-  const nowRef = useRef(Date.now());
-
   useEffect(() => {
     const timer = window.setInterval(() => {
       nowRef.current = Date.now();
@@ -1549,14 +1546,6 @@ function MineSection({
               <div className="adn-stat-chip__val">{chestVault?.readyCount || 0} hazır</div>
             </div>
           </div>
-        </div>
-      </section>
-    </>
-  );
-          <MetricCard icon="tap" label="Tap getirisi" value={<><AnimatedNumber value={Math.round(user.tapPower * (user.tapMultiplier || 1))} /></>} note="Her vurus bu kadar ADN uretir." />
-          <MetricCard icon="chart" label="Pasif kasa" value={<><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</>} note="Market ve boost ile buyur." />
-          <MetricCard icon="star" label="Combo" value={`x${(user.comboMultiplier || 1).toFixed(1)}`} note="Ritim arttikca combo hissi buyur." />
-          <MetricCard icon="spark" label="Kritik sans" value={formatPercentValue(user.critChance || 0)} note={`Event saati ${formatCountdown(topOfHour(now), now)} icinde yenilenir.`} />
         </div>
       </section>
     </>
