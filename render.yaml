@@ -1,4 +1,15 @@
 services:
+  - type: web
+    name: adn-web
+    runtime: static
+    rootDir: apps/web
+    buildCommand: npm install -g pnpm@9.15.0 && pnpm install --dir ../.. --no-frozen-lockfile && pnpm --dir ../.. --filter web build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
   - type: worker
     name: adn-bot
     runtime: node
