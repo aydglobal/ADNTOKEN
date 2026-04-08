@@ -115,6 +115,7 @@ const TABS: Array<{ key: TabKey; label: string; icon: AppIconName }> = [
   { key: 'mine', label: 'Tap', icon: 'tap' },
   { key: 'boosts', label: 'Market', icon: 'boost' },
   { key: 'tasks', label: 'Kazan', icon: 'ticket' },
+  { key: 'wallet', label: 'Cüzdan', icon: 'wallet' },
   { key: 'social', label: 'Sosyal', icon: 'referral' },
   { key: 'settings', label: 'Ayar', icon: 'spark' }
 ];
@@ -820,10 +821,11 @@ export default function App() {
           </div>
         </header>
 
-        {/* XP Bar */}
-        <XpBar xp={user.xp ?? user.coins} level={user.level} />
+        {/* XP Bar — sadece mine tab'ında */}
+        {isMineTab ? <XpBar xp={user.xp ?? user.coins} level={user.level} /> : null}
 
-        {/* Balance Strip */}
+        {/* Balance Strip — sadece mine tab'ında */}
+        {isMineTab ? (
         <div className="adn-balance-strip">
           <div className="adn-balance-strip__item adn-balance-strip__item--gold">
             <span className="adn-balance-strip__label">ADN</span>
@@ -849,6 +851,7 @@ export default function App() {
             </>
           )}
         </div>
+        ) : null}
 
         <main key={activeTab} className="game-screen">
           <ScreenTransition screenKey={activeTab}>
@@ -939,7 +942,7 @@ export default function App() {
 
           {activeTab === 'settings' ? (
             <div className="game-section">
-              <div className="game-section__header">
+              <div className="game-section__head">
                 <h2 className="game-section__title">Ayarlar</h2>
               </div>
               <FeedbackSettingsCard />
