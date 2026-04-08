@@ -434,9 +434,9 @@ export default function App() {
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
 
-    // Throttle: 200ms — API minimum 180ms, biraz marj bırak
+    // Throttle: 250ms — hızlı tap'lerde race condition önle
     const now = Date.now();
-    if (now - tapThrottleRef.current < 200) return;
+    if (now - tapThrottleRef.current < 250) return;
     tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -454,7 +454,7 @@ export default function App() {
     playHaptic('light');
     registerTap();
 
-    // Optimistic update — enerji ve coin anlık azalt
+    // Optimistic update — coin sadece artar, hiç düşmez
     const prevEnergy = user.energy;
     const prevCoins = user.coins;
     setUser((prev: any) => prev ? {
@@ -465,10 +465,10 @@ export default function App() {
 
     try {
       const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
-      // API sonucu — kesin değerlerle güncelle
+      // API sonucu — coin hiçbir zaman düşmesin, sadece yükselebilir
       setUser((prev: any) => prev ? {
         ...prev,
-        coins: result.coins,
+        coins: Math.max(prev.coins, result.coins),
         energy: result.energy,
         maxEnergy: result.energyMax ?? prev.maxEnergy,
         level: result.level,
