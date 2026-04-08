@@ -20,7 +20,7 @@ export function getAuthDateFromInitData(initData: string): number | null {
 export function verifyTelegramInitData(
   initData: string,
   botToken: string,
-  maxAgeSeconds = 300
+  maxAgeSeconds = 3600
 ): boolean {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');

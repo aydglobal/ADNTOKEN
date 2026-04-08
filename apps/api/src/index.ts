@@ -44,7 +44,6 @@ import { authMiddleware } from './middlewares/authMiddleware';
 import { adminOnlyMiddleware } from './middlewares/adminOnlyMiddleware';
 import { runNotificationWorker } from './workers/notification.worker';
 import { runAnalyticsDailyJob } from './workers/analyticsDaily.worker';
-import { startTelegramBot } from './lib/telegram';
 
 const app = express();
 app.set('trust proxy', 1); // Render/Vercel proxy desteği
@@ -276,9 +275,6 @@ const server = app.listen(Number(env.PORT), '0.0.0.0', () => {
     logger.info({ msUntilNextRun }, 'analytics_job_scheduled');
   };
   scheduleAnalyticsJob();
-
-  // Telegram bot — polling modunda başlat
-  startTelegramBot().catch((err) => logger.error({ err }, 'telegram_bot_error'));
 });
 
 function gracefulShutdown(signal: string) {
