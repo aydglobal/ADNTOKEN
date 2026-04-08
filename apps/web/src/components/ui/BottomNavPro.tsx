@@ -27,10 +27,11 @@ export function BottomNavPro({ items, active, onChange }: Props) {
       borderRadius: '20px 20px 0 0',
       border: '1px solid rgba(255,255,255,0.08)',
       borderBottom: 'none',
-      background: 'rgba(248,250,255,0.97)',
-      backdropFilter: 'blur(24px)',
+      background: 'rgba(255,255,255,0.90)',
+      backdropFilter: 'blur(20px)',
       padding: '8px 10px 12px',
-      boxShadow: '0 -2px 20px rgba(30,60,120,0.12), inset 0 1px 0 rgba(100,130,220,0.15)',
+      boxShadow: '0 -1px 0 rgba(0,0,0,0.06)',
+      borderTop: '1px solid rgba(0,0,0,0.06)',
     }}>
       <div style={{
         display: 'grid',
@@ -53,11 +54,11 @@ export function BottomNavPro({ items, active, onChange }: Props) {
                 minHeight: 50,
                 borderRadius: 14,
                 border: 'none',
-                borderBottom: isActive ? '2px solid #2563EB' : '2px solid transparent',
+                borderBottom: isActive ? '2px solid #3B82F6' : '2px solid transparent',
         background: isActive
-                  ? 'linear-gradient(180deg, rgba(37,99,235,0.12), rgba(124,58,237,0.06))'
+                  ? 'rgba(59,130,246,0.08)'
                   : 'transparent',
-                color: isActive ? '#1E40AF' : 'rgba(71,85,105,0.7)',
+                color: isActive ? '#2563EB' : '#94A3B8',
                 cursor: 'pointer',
                 padding: '6px 4px 4px',
                 transition: 'color 150ms ease, background 150ms ease, border-color 150ms ease',
