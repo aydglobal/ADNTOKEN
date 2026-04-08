@@ -25,16 +25,16 @@ export function BottomNavPro({ items, active, onChange }: Props) {
       width: 'min(100%, 760px)',
       zIndex: 40,
       borderRadius: '0',
-      borderTop: '1px solid rgba(255,255,255,0.08)',
-      background: 'rgba(8,14,28,0.97)',
+      borderTop: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(7,16,42,0.98)',
       backdropFilter: 'blur(20px)',
-      padding: '8px 8px 12px',
+      padding: '8px 10px 12px',
       boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
     }}>
       <div style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${items.length}, 1fr)`,
-        gap: 2,
+        gap: 6,
       }}>
         {items.map((item) => {
           const isActive = active === item.key;
@@ -49,11 +49,11 @@ export function BottomNavPro({ items, active, onChange }: Props) {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: 52,
-                borderRadius: 12,
+                minHeight: 58,
+                borderRadius: 16,
                 border: 'none',
-                background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.40)',
+                background: isActive ? 'linear-gradient(180deg, rgba(255,212,74,0.22), rgba(255,255,255,0.08))' : 'transparent',
+                color: isActive ? '#FFE082' : 'rgba(255,255,255,0.58)',
                 cursor: 'pointer',
                 padding: '6px 4px 4px',
                 transition: 'color 150ms ease, background 150ms ease',
@@ -85,7 +85,7 @@ export function BottomNavPro({ items, active, onChange }: Props) {
               </div>
               <div style={{
                 marginTop: 4,
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase',

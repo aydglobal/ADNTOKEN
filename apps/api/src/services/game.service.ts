@@ -201,38 +201,6 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
       }
     });
 
-    if (clientNonce != null && clientNonce < user.tapNonce) {
-      const staleBoostState = getActiveBoostMap(
-        user.boosts.map((boost) => ({
-          type: boost.type,
-          level: boost.level,
-          isActive: boost.isActive,
-          expiresAt: boost.expiresAt
-        }))
-      );
-      const staleGameplay = resolveGameplayState(user, user.ownedUpgrades);
-      const staleEnergyMax = getEffectiveEnergyMax(staleGameplay.maxEnergy, staleBoostState.energyMaxBonus);
-      const staleRestored = restoreEnergy({
-        currentEnergy: user.energy,
-        lastEnergyAt: user.lastEnergyAt ?? new Date(),
-        energyMax: staleEnergyMax,
-        regenPerMinute: staleGameplay.regenPerMinute ?? 1
-      });
-
-      return {
-        coins: user.coins,
-        energy: Math.min(staleRestored.energy, staleEnergyMax),
-        energyMax: staleEnergyMax,
-        addedCoins: 0,
-        level: staleGameplay.level,
-        tapMultiplier: staleBoostState.tapMultiplier,
-        tapNonce: user.tapNonce,
-        passiveIncomePerHour: staleGameplay.passiveIncomePerHour,
-        pendingMiningCoins: user.pendingPassiveIncome,
-        note: 'sync'
-      };
-    }
-
     const antiCheat = assertTapAllowed(user, { count: taps, clientNonce });
     const totalCost = antiCheat.tapCount;
     capturedWindowCount = antiCheat.nextWindowCount;
@@ -307,7 +275,7 @@ export async function tapUser(userId: string, taps = 1, clientNonce?: number) {
         maxEnergy: nextGameplay.maxEnergy,
         offlineCapHours: nextGameplay.offlineCapHours,
         // lastEnergyAt'i sıfırlama — enerji regen birikmeye devam etsin
-        tapNonce: generateTapNonce(user.tapNonce),
+        tapNonce: generateTapNonce(),
         lastTapAt: new Date(),
         totalTaps: { increment: antiCheat.tapCount },
         tapWindowStart: antiCheat.resetWindow ? new Date() : user.tapWindowStart || new Date(),

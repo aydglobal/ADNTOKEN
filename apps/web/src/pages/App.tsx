@@ -112,11 +112,11 @@ type ActionCard = {
 };
 
 const TABS: Array<{ key: TabKey; label: string; icon: AppIconName }> = [
-  { key: 'mine', label: 'Tap', icon: 'tap' },
+  { key: 'mine', label: 'Ana', icon: 'tap' },
   { key: 'boosts', label: 'Market', icon: 'boost' },
-  { key: 'tasks', label: 'Kazan', icon: 'ticket' },
+  { key: 'tasks', label: 'Görev', icon: 'ticket' },
   { key: 'wallet', label: 'Cüzdan', icon: 'wallet' },
-  { key: 'social', label: 'Sosyal', icon: 'referral' },
+  { key: 'social', label: 'Ekip', icon: 'referral' },
   { key: 'settings', label: 'Ayar', icon: 'spark' }
 ];
 
@@ -177,10 +177,6 @@ export default function App() {
   });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
   const tapThrottleRef = useRef<number>(0);
-  const tapFlushTimerRef = useRef<number | null>(null);
-  const pendingTapCountRef = useRef(0);
-  const pendingTapGainRef = useRef(0);
-  const tapRequestInFlightRef = useRef(false);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -239,14 +235,6 @@ export default function App() {
       setNow(Date.now());
     }, 5000);
     return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (tapFlushTimerRef.current) {
-        window.clearTimeout(tapFlushTimerRef.current);
-      }
-    };
   }, []);
 
   const refreshAll = async () => {
@@ -443,119 +431,60 @@ export default function App() {
     setOnboardingStep(stepOrder[Math.min(idx + 1, stepOrder.length - 1)]);
   }
 
-  async function flushQueuedTaps() {
-    if (!token || !user || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
-
-    tapRequestInFlightRef.current = true;
-
-    const tapsToSend = pendingTapCountRef.current;
-    pendingTapCountRef.current = 0;
-    const optimisticGain = pendingTapGainRef.current;
-
-    try {
-      const result = await postJSON<TapResult>(
-        '/api/game/tap',
-        {
-          taps: tapsToSend,
-          clientNonce: user.tapNonce ?? 0
-        },
-        token
-      );
-
-      setUser((prev: any) => {
-        if (!prev) return prev;
-
-        const safeCoins = Math.max(prev.coins, result.coins);
-        const safeEnergy = typeof result.energy === 'number'
-          ? result.energy
-          : Math.max(0, prev.energy - tapsToSend);
-
-        return {
-          ...prev,
-          coins: safeCoins,
-          energy: safeEnergy,
-          maxEnergy: result.energyMax ?? prev.maxEnergy,
-          level: result.level ?? prev.level,
-          tapNonce: result.tapNonce ?? prev.tapNonce,
-          tapMultiplier: result.tapMultiplier ?? prev.tapMultiplier,
-          passiveIncomePerHour: result.passiveIncomePerHour ?? prev.passiveIncomePerHour
-        };
-      });
-
-      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
-
-      if (user.level && result.level && shouldShowLevelUp(user.level, result.level)) {
-        gameBus.emit('level_up', { level: result.level });
-      }
-    } catch {
-      setUser((prev: any) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          coins: Math.max(0, prev.coins - optimisticGain),
-          energy: Math.min(prev.maxEnergy, prev.energy + tapsToSend)
-        };
-      });
-
-      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
-    } finally {
-      tapRequestInFlightRef.current = false;
-
-      if (pendingTapCountRef.current > 0) {
-        tapFlushTimerRef.current = window.setTimeout(() => {
-          void flushQueuedTaps();
-        }, 80);
-      }
-    }
-  }
-
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
 
+    // Throttle: 250ms — hızlı tap'lerde race condition önle
     const now = Date.now();
-    if (now - tapThrottleRef.current < 55) return;
+    if (now - tapThrottleRef.current < 250) return;
     tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
-    const perTapGain = Math.max(
-      1,
-      Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier)
-    );
+    const baseGain = Math.max(1, user.tapPower);
+    const isCrit = Math.random() < 0.05;
 
-    const isCrit = Math.random() < 0.06;
-    const totalGain = isCrit ? Math.round(perTapGain * 2) : perTapGain;
-
-    pushBurst(`+${fmt(totalGain)}`, x, y, 'gold');
-    if (isCrit) pushBurst('CRIT!', x, y - 30, 'pink');
+    pushBurst(`+${fmt(baseGain)}`, x, y, 'gold');
+    if (isCrit) pushBurst(`CRIT!`, x, y - 30, 'pink');
 
     triggerImpact('tap');
     playSoftClick();
     playHaptic('light');
     registerTap();
 
-    pendingTapCountRef.current += 1;
-    pendingTapGainRef.current += totalGain;
+    // Optimistic update — coin sadece artar, hiç düşmez
+    const prevEnergy = user.energy;
+    const prevCoins = user.coins;
+    setUser((prev: any) => prev ? {
+      ...prev,
+      coins: prev.coins + baseGain,
+      energy: Math.max(0, prev.energy - 1),
+    } : prev);
 
-    setUser((prev: any) =>
-      prev
-        ? {
-            ...prev,
-            coins: prev.coins + totalGain,
-            energy: Math.max(0, prev.energy - 1)
-          }
-        : prev
-    );
-
-    if (tapFlushTimerRef.current) {
-      window.clearTimeout(tapFlushTimerRef.current);
+    try {
+      const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
+      // API sonucu — coin hiçbir zaman düşmesin, sadece yükselebilir
+      setUser((prev: any) => prev ? {
+        ...prev,
+        coins: Math.max(prev.coins, result.coins),
+        energy: result.energy,
+        maxEnergy: result.energyMax ?? prev.maxEnergy,
+        level: result.level,
+        tapNonce: result.tapNonce ?? prev.tapNonce,
+      } : prev);
+      if (shouldShowLevelUp(user.level ?? 1, result.level)) {
+        gameBus.emit('level_up', { level: result.level });
+      }
+    } catch {
+      // API hata verdi — optimistic update'i geri al
+      setUser((prev: any) => prev ? {
+        ...prev,
+        coins: prevCoins,
+        energy: prevEnergy,
+      } : prev);
     }
-
-    tapFlushTimerRef.current = window.setTimeout(() => {
-      void flushQueuedTaps();
-    }, 90);
   }
 
   async function handleDailyClaim() {
@@ -871,7 +800,7 @@ export default function App() {
               <img src={tokenImage} alt="ADN Token" className="brand-mark__image" />
             </span>
             <div className="game-brand__copy">
-              <h1 className="game-brand__title">ADN Arena</h1>
+              <h1 className="game-brand__title">ADN Empire</h1>
               <span className="game-eyebrow">Lv {user.level}</span>
             </div>
           </div>
@@ -1645,7 +1574,7 @@ function BoostsSection({
 }) {
   const sortedCards = [...(shop?.cards || [])]
     .sort((left, right) => Number(right.unlocked) - Number(left.unlocked))
-    .slice(0, 8);
+    .slice(0, 4);
 
   return (
     <>
@@ -1653,8 +1582,8 @@ function BoostsSection({
         <div className="game-section__head">
           <div>
             <span className="game-eyebrow">Boost Floor</span>
-            <h3 className="game-section__title">Anlik guc patlamasi</h3>
-            <p className="game-section__description">Aktif boostlar tum arayuze enerji verir, market ise altyapiyi buyutur.</p>
+            <h3 className="game-section__title">Hızlı Boostlar</h3>
+            <p className="game-section__description">Kısa ve net kartlarla güç al, alttan marketi geliştir.</p>
           </div>
           <span className="game-pill is-success">{user.boosts?.length ? `${user.boosts.length} aktif` : 'Hazir'}</span>
         </div>
@@ -1677,7 +1606,7 @@ function BoostsSection({
         </div>
 
         <div className="game-grid game-grid--triple">
-          {boosts.map((boost) => {
+          {boosts.slice(0, 4).map((boost) => {
             const active = user.boosts?.find((item) => item.type === boost.key) || null;
             const isVip = boost.key === 'vip_weekly';
             const isEvent = boost.key === 'event_pass';
@@ -1718,8 +1647,8 @@ function BoostsSection({
         <div className="game-section__head">
           <div>
             <span className="game-eyebrow">Market</span>
-            <h3 className="game-section__title">Modul katmani</h3>
-            <p className="game-section__description">Kategori aksanlariyla hangi kartin nasil guclendirdigi ilk bakista okunur.</p>
+            <h3 className="game-section__title">Market</h3>
+            <p className="game-section__description">Tek bakışta fiyat, gelir ve sonraki seviye.</p>
           </div>
         </div>
 
@@ -1836,7 +1765,7 @@ function TasksSection({
           </div>
 
           {/* Mission board */}
-          {(missionBoard?.missions || []).map((mission) => {
+          {(missionBoard?.missions || []).slice(0, 5).map((mission) => {
             const isClaimable = mission.status === 'completed' && !mission.rewardClaimedAt;
             const isDone = Boolean(mission.rewardClaimedAt);
             return (
@@ -1867,7 +1796,7 @@ function TasksSection({
       {/* Sosyal Tab */}
       {taskTab === 'social' && (
         <div className="adn-task-list">
-          {SOCIAL_TASKS.map((task) => {
+          {SOCIAL_TASKS.slice(0, 5).map((task) => {
             const claimed = airdropTasks.find((t) => t.code === task.code)?.claimed;
             return (
               <div key={task.id} className={`adn-task-row${claimed ? ' adn-task-row--done' : ''}`}>
@@ -1896,7 +1825,7 @@ function TasksSection({
       {/* Airdrop Tab */}
       {taskTab === 'airdrop' && (
         <div className="adn-task-list">
-          {airdropTasks.map((task) => (
+          {airdropTasks.slice(0, 5).map((task) => (
             <div key={task.id} className={`adn-task-row${task.claimed ? ' adn-task-row--done' : task.completed ? ' adn-task-row--claimable' : ''}`}>
               <div className="adn-task-row__icon">🪂</div>
               <div className="adn-task-row__body">
@@ -2139,7 +2068,7 @@ function WalletSection({
         </div>
 
         <div className="game-grid game-grid--tasks">
-          {(chestVault?.items || []).map((item) => (
+          {(chestVault?.items || []).slice(0, 4).map((item) => (
             <div key={item.id} className={`game-task-card${item.status === 'ready' ? ' is-claimable' : ''}`}>
               <div className="game-task-card__top">
                 <span className="game-task-card__reward">{item.rarity.toUpperCase()}</span>
@@ -2262,13 +2191,13 @@ function SocialSection({
         <div className="game-section__head">
           <div>
             <span className="game-eyebrow">Canli siralama</span>
-            <h3 className="game-section__title">Mini leaderboard</h3>
-            <p className="game-section__description">Siralama hareketi ve online his ana oyunu daha sosyal hale getirir.</p>
+            <h3 className="game-section__title">Sıralama</h3>
+            <p className="game-section__description">Sadece en önemli 5 oyuncu gösterilir.</p>
           </div>
         </div>
 
         <div className="game-list">
-          {leaderboard.slice(0, 8).map((entry, index) => (
+          {leaderboard.slice(0, 5).map((entry, index) => (
             <div
               key={entry.id}
               className={`game-leaderboard-row${index === 0 ? ' game-leaderboard-row--gold' : ''}${index === 1 ? ' game-leaderboard-row--silver' : ''}${index === 2 ? ' game-leaderboard-row--bronze' : ''}${entry.id === currentUserId ? ' game-leaderboard-row--self' : ''}`}
