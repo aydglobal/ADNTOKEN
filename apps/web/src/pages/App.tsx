@@ -2068,20 +2068,40 @@ function WalletSection({
         </div>
 
         <div className="game-grid game-grid--tasks">
-          {(chestVault?.items || []).map((item) => (
-            <div key={item.id} className={`game-task-card${item.status === 'ready' ? ' is-claimable' : ''}`}>
-              <div className="game-task-card__top">
-                <span className="game-task-card__reward">{item.rarity.toUpperCase()}</span>
-                <span className={`game-pill${item.status === 'ready' ? ' is-info' : ''}`}>{item.status}</span>
+          {(chestVault?.items || []).map((item) => {
+            const rarityLabel: Record<string, string> = {
+              common: '⬜ Standart',
+              rare: '🔵 Nadir',
+              epic: '🟣 Epik',
+              legendary: '🟡 Efsanevi',
+              mythic: '🔴 Mitik'
+            };
+            const isReady = item.status === 'ready';
+            return (
+              <div key={item.id} className={`game-task-card${isReady ? ' is-claimable' : ''}`}>
+                <div className="game-task-card__top">
+                  <span style={{ fontWeight: 800, fontSize: 14 }}>{rarityLabel[item.rarity] || item.rarity.toUpperCase()}</span>
+                  <span className={`game-pill${isReady ? ' is-info' : ''}`}>{isReady ? '✅ Hazır' : '🔒 Kilitli'}</span>
+                </div>
+                <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>
+                  <div>📦 Kaynak: <strong style={{ color: '#0F172A' }}>{item.source}</strong></div>
+                  <div>💎 Ödül: <strong style={{ color: '#D97706' }}>{fmt(item.rewardCoins)} ADN</strong></div>
+                  {item.shards > 0 && <div>🔷 Shard: <strong style={{ color: '#2563EB' }}>{item.shards}</strong></div>}
+                  {item.boostMinutes > 0 && <div>⚡ Boost: <strong style={{ color: '#7C3AED' }}>{item.boostMinutes} dk</strong></div>}
+                </div>
+                <button className="game-button" disabled={!isReady || Boolean(busyKey)} onClick={() => onOpenChest(item.id)}>
+                  {busyKey === `chest:${item.id}` ? 'Açılıyor...' : isReady ? '🎁 Cache Aç' : 'Henüz Hazır Değil'}
+                </button>
               </div>
-              <h3>{item.source}</h3>
-              <p>{fmt(item.rewardCoins)} ADN, {item.shards} shard, {item.boostMinutes} dk boost.</p>
-              <button className="game-button" disabled={item.status !== 'ready' || Boolean(busyKey)} onClick={() => onOpenChest(item.id)}>
-                {busyKey === `chest:${item.id}` ? 'Aciliyor...' : item.status === 'ready' ? 'Cache ac' : 'Hazir degil'}
-              </button>
+            );
+          })}
+          {!chestVault?.items?.length ? (
+            <div className="game-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>📦</div>
+              <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Vault Boş</div>
+              <div style={{ color: '#94A3B8', fontSize: 13 }}>Tap yaparak yeni cache'ler kazan.</div>
             </div>
-          ))}
-          {!chestVault?.items?.length ? <div className="game-empty">Vault su an bos. Tap core uzerinden yeni chest kovalayabilirsin.</div> : null}
+          ) : null}
         </div>
       </section>
     </>
