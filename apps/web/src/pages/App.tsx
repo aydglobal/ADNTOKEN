@@ -183,6 +183,8 @@ export default function App() {
   const latestEnergyRef = useRef(0);
   const latestTapNonceRef = useRef(0);
   const latestLevelRef = useRef(1);
+  const tapHoldDelayRef = useRef<number | null>(null);
+  const tapHoldIntervalRef = useRef<number | null>(null);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -247,6 +249,12 @@ export default function App() {
     return () => {
       if (tapFlushTimerRef.current) {
         window.clearTimeout(tapFlushTimerRef.current);
+      }
+      if (tapHoldDelayRef.current) {
+        window.clearTimeout(tapHoldDelayRef.current);
+      }
+      if (tapHoldIntervalRef.current) {
+        window.clearInterval(tapHoldIntervalRef.current);
       }
     };
   }, []);
@@ -527,12 +535,23 @@ export default function App() {
     }
   }
 
-  async function handleTap(event: PointerEvent<HTMLButtonElement>) {
+  function stopTapHold() {
+    if (tapHoldDelayRef.current) {
+      window.clearTimeout(tapHoldDelayRef.current);
+      tapHoldDelayRef.current = null;
+    }
+    if (tapHoldIntervalRef.current) {
+      window.clearInterval(tapHoldIntervalRef.current);
+      tapHoldIntervalRef.current = null;
+    }
+  }
+
+  function queueTap(target: HTMLButtonElement, clientX?: number, clientY?: number) {
     if (!token || !user || latestEnergyRef.current <= 0) return;
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
-    const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
+    const rect = target.getBoundingClientRect();
+    const x = typeof clientX === 'number' ? clientX - rect.left : rect.width / 2;
+    const y = typeof clientY === 'number' ? clientY - rect.top : rect.height / 2;
 
     const perTapGain = Math.max(
       1,
@@ -544,6 +563,7 @@ export default function App() {
 
     pushBurst(`+${fmt(totalGain)}`, x, y, 'gold');
     if (isCrit) pushBurst('CRIT!', x, y - 30, 'pink');
+    pushRipple(x, y);
 
     triggerImpact('tap');
     playSoftClick();
@@ -570,7 +590,22 @@ export default function App() {
 
     tapFlushTimerRef.current = window.setTimeout(() => {
       void flushQueuedTaps();
-    }, 45);
+    }, 32);
+  }
+
+  function handleTapStart(event: PointerEvent<HTMLButtonElement>) {
+    if (!token || !user || latestEnergyRef.current <= 0) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    queueTap(event.currentTarget, event.clientX, event.clientY);
+    stopTapHold();
+
+    tapHoldDelayRef.current = window.setTimeout(() => {
+      tapHoldIntervalRef.current = window.setInterval(() => {
+        queueTap(event.currentTarget, event.clientX, event.clientY);
+      }, 70);
+    }, 180);
   }
 
   async function handleDailyClaim() {
@@ -957,7 +992,8 @@ export default function App() {
               isComboActive={isComboActive}
               busyKey={busyKey}
               now={now}
-              onTap={handleTap}
+              onTapStart={handleTapStart}
+              onTapEnd={stopTapHold}
             />
           ) : null}
 
@@ -1531,7 +1567,8 @@ function MineSection({
   isComboActive,
   busyKey,
   now,
-  onTap
+  onTapStart,
+  onTapEnd
 }: {
   user: PlayerProfile;
   dashboard: AirdropDashboard;
@@ -1547,7 +1584,8 @@ function MineSection({
   isComboActive: boolean;
   busyKey: string | null;
   now: number;
-  onTap: (event: MouseEvent<HTMLButtonElement>) => Promise<void>;
+  onTapStart: (event: PointerEvent<HTMLButtonElement>) => void;
+  onTapEnd: () => void;
 }) {
   const isReady = energyPercent >= 100;
   const streakHistory = buildStreakHistory(daily?.streakDay || user.dailyStreak || 0);
@@ -1569,7 +1607,10 @@ function MineSection({
           <TapMotionButton
             type="button"
             className="adn-tap-btn"
-            onPointerDown={onTap}
+            onPointerDown={onTapStart}
+            onPointerUp={onTapEnd}
+            onPointerCancel={onTapEnd}
+            onPointerLeave={onTapEnd}
             disabled={user.energy <= 0}
             energy={user.energy}
             busy={false}
