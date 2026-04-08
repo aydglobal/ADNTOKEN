@@ -10,9 +10,13 @@ apps/web/.vercel
 apps/web/.vercel/
 *.log
 apps/api/prisma/dev.db
-_tmp_admin_dashboard
-_tmp_boost_upgrade
-_tmp_growth_ops
-_tmp_payout_referral_ai
-Downloads/
-adn-motion-patch.tsx
+
+# Eski pack/kit klasörleri — miniapp reposuna taşındı
+ADN_FULL_ULTRA_PACK/
+adn-v2-full-kit/
+_crypto_empire_pack/
+_empire_v2/
+_imports/
+_master_pack_2/
+_master_updated/
+*.zip
