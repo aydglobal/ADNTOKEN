@@ -180,6 +180,7 @@ export default function App() {
   const pendingTapCountRef = useRef(0);
   const pendingTapGainRef = useRef(0);
   const tapRequestInFlightRef = useRef(false);
+  const lastTapRequestAtRef = useRef(0);
   const latestEnergyRef = useRef(0);
   const latestTapNonceRef = useRef(0);
   const latestLevelRef = useRef(1);
@@ -462,7 +463,20 @@ export default function App() {
   async function flushQueuedTaps() {
     if (!token || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
 
+    const nowMs = Date.now();
+    const elapsed = nowMs - lastTapRequestAtRef.current;
+    if (elapsed < 120) {
+      if (tapFlushTimerRef.current) {
+        window.clearTimeout(tapFlushTimerRef.current);
+      }
+      tapFlushTimerRef.current = window.setTimeout(() => {
+        void flushQueuedTaps();
+      }, 120 - elapsed);
+      return;
+    }
+
     tapRequestInFlightRef.current = true;
+    lastTapRequestAtRef.current = nowMs;
 
     const tapsToSend = pendingTapCountRef.current;
     pendingTapCountRef.current = 0;
@@ -553,16 +567,13 @@ export default function App() {
     const x = typeof clientX === 'number' ? clientX - rect.left : rect.width / 2;
     const y = typeof clientY === 'number' ? clientY - rect.top : rect.height / 2;
 
-    const perTapGain = Math.max(
+    // Keep optimistic balance conservative so server authority does not visibly pull it back.
+    const totalGain = Math.max(
       1,
-      Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier)
+      Math.round((user.tapPower || 1) * (user.tapMultiplier || 1))
     );
 
-    const isCrit = Math.random() < 0.06;
-    const totalGain = isCrit ? Math.round(perTapGain * 2) : perTapGain;
-
     pushBurst(`+${fmt(totalGain)}`, x, y, 'gold');
-    if (isCrit) pushBurst('CRIT!', x, y - 30, 'pink');
     pushRipple(x, y);
 
     triggerImpact('tap');
@@ -590,7 +601,7 @@ export default function App() {
 
     tapFlushTimerRef.current = window.setTimeout(() => {
       void flushQueuedTaps();
-    }, 32);
+    }, 120);
   }
 
   function handleTapStart(event: PointerEvent<HTMLButtonElement>) {
@@ -604,7 +615,7 @@ export default function App() {
     tapHoldDelayRef.current = window.setTimeout(() => {
       tapHoldIntervalRef.current = window.setInterval(() => {
         queueTap(event.currentTarget, event.clientX, event.clientY);
-      }, 70);
+      }, 90);
     }, 180);
   }
 
