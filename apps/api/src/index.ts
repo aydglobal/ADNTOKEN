@@ -95,7 +95,11 @@ app.use(
     origin: (origin, callback) => {
       // webhook ve server-to-server istekler için origin olmayabilir
       if (!origin) return callback(null, true);
+      // Telegram WebApp'ten gelen istekler — null origin veya t.me origin
+      if (origin.includes('telegram') || origin.includes('t.me')) return callback(null, true);
       if (isAllowedOrigin(origin)) return callback(null, true);
+      // Render static site'lar için onrender.com domain'lerini izin ver
+      if (origin.endsWith('.onrender.com')) return callback(null, true);
       callback(new Error(`CORS: ${origin} izin verilmiyor`));
     },
     credentials: true
