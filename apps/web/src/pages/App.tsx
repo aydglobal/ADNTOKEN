@@ -177,6 +177,10 @@ export default function App() {
   });
   const [levelUpOverlay, setLevelUpOverlay] = useState<{ level: number; visible: boolean }>({ level: 1, visible: false });
   const tapThrottleRef = useRef<number>(0);
+  const tapFlushTimerRef = useRef<number | null>(null);
+  const pendingTapCountRef = useRef(0);
+  const pendingTapGainRef = useRef(0);
+  const tapRequestInFlightRef = useRef(false);
 
   const [activeTab, setActiveTab] = useState<TabKey>('mine');
   const [dashboard, setDashboard] = useState<AirdropDashboard | null>(null);
@@ -219,6 +223,14 @@ export default function App() {
 
   useEffect(() => {
     bootTelegramUI();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tapFlushTimerRef.current) {
+        window.clearTimeout(tapFlushTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -431,60 +443,96 @@ export default function App() {
     setOnboardingStep(stepOrder[Math.min(idx + 1, stepOrder.length - 1)]);
   }
 
+  async function flushQueuedTaps() {
+    if (!token || !user || tapRequestInFlightRef.current || pendingTapCountRef.current <= 0) return;
+
+    tapRequestInFlightRef.current = true;
+
+    const tapsToSend = pendingTapCountRef.current;
+    pendingTapCountRef.current = 0;
+
+    try {
+      const result = await postJSON<TapResult>(
+        '/api/game/tap',
+        { taps: tapsToSend, clientNonce: user.tapNonce ?? 0 },
+        token
+      );
+
+      setUser((prev: any) => {
+        if (!prev) return prev;
+        const safeCoins = Math.max(prev.coins, result.coins);
+        const safeEnergy = typeof result.energy === 'number'
+          ? result.energy
+          : Math.max(0, prev.energy - tapsToSend);
+        return {
+          ...prev,
+          coins: safeCoins,
+          energy: safeEnergy,
+          maxEnergy: result.energyMax ?? prev.maxEnergy,
+          level: result.level ?? prev.level,
+          tapNonce: result.tapNonce ?? prev.tapNonce,
+          tapMultiplier: result.tapMultiplier ?? prev.tapMultiplier,
+          passiveIncomePerHour: result.passiveIncomePerHour ?? prev.passiveIncomePerHour
+        };
+      });
+
+      pendingTapGainRef.current = 0;
+
+      if (user.level && result.level && shouldShowLevelUp(user.level, result.level)) {
+        gameBus.emit('level_up', { level: result.level });
+      }
+    } catch {
+      setUser((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          coins: Math.max(0, prev.coins - pendingTapGainRef.current),
+          energy: Math.min(prev.maxEnergy, prev.energy + tapsToSend)
+        };
+      });
+      pendingTapGainRef.current = 0;
+    } finally {
+      tapRequestInFlightRef.current = false;
+      if (pendingTapCountRef.current > 0) {
+        tapFlushTimerRef.current = window.setTimeout(() => { flushQueuedTaps(); }, 80);
+      }
+    }
+  }
+
   async function handleTap(event: MouseEvent<HTMLButtonElement>) {
     if (!token || !user || user.energy <= 0) return;
 
-    // Throttle: 250ms — hızlı tap'lerde race condition önle
     const now = Date.now();
-    if (now - tapThrottleRef.current < 250) return;
+    if (now - tapThrottleRef.current < 55) return;
     tapThrottleRef.current = now;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
-    const baseGain = Math.max(1, user.tapPower);
-    const isCrit = Math.random() < 0.05;
+    const perTapGain = Math.max(1, Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier));
+    const isCrit = Math.random() < 0.06;
+    const totalGain = isCrit ? Math.round(perTapGain * 2) : perTapGain;
 
-    pushBurst(`+${fmt(baseGain)}`, x, y, 'gold');
-    if (isCrit) pushBurst(`CRIT!`, x, y - 30, 'pink');
+    pushBurst(`+${fmt(totalGain)}`, x, y, 'gold');
+    if (isCrit) pushBurst('CRIT!', x, y - 30, 'pink');
 
     triggerImpact('tap');
     playSoftClick();
     playHaptic('light');
     registerTap();
 
-    // Optimistic update — coin sadece artar, hiç düşmez
-    const prevEnergy = user.energy;
-    const prevCoins = user.coins;
+    pendingTapCountRef.current += 1;
+    pendingTapGainRef.current += totalGain;
+
     setUser((prev: any) => prev ? {
       ...prev,
-      coins: prev.coins + baseGain,
-      energy: Math.max(0, prev.energy - 1),
+      coins: prev.coins + totalGain,
+      energy: Math.max(0, prev.energy - 1)
     } : prev);
 
-    try {
-      const result = await postJSON<TapResult>('/api/game/tap', { taps: 1, clientNonce: user.tapNonce ?? 0 }, token);
-      // API sonucu — coin hiçbir zaman düşmesin, sadece yükselebilir
-      setUser((prev: any) => prev ? {
-        ...prev,
-        coins: Math.max(prev.coins, result.coins),
-        energy: result.energy,
-        maxEnergy: result.energyMax ?? prev.maxEnergy,
-        level: result.level,
-        tapNonce: result.tapNonce ?? prev.tapNonce,
-      } : prev);
-      if (shouldShowLevelUp(user.level ?? 1, result.level)) {
-        gameBus.emit('level_up', { level: result.level });
-      }
-    } catch {
-      // API hata verdi — optimistic update'i geri al
-      setUser((prev: any) => prev ? {
-        ...prev,
-        coins: prevCoins,
-        energy: prevEnergy,
-      } : prev);
-    }
+    if (tapFlushTimerRef.current) window.clearTimeout(tapFlushTimerRef.current);
+    tapFlushTimerRef.current = window.setTimeout(() => { flushQueuedTaps(); }, 90);
   }
 
   async function handleDailyClaim() {
