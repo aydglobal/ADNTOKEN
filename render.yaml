@@ -1,5 +1,32 @@
 services:
   - type: web
+    name: adn-api
+    runtime: node
+    rootDir: apps/api
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npx prisma db push --accept-data-loss && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: MINIAPP_URL
+        sync: false
+      - key: ADMIN_SECRET
+        sync: false
+      - key: ADMIN_TELEGRAM_USERNAME
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
     name: adn-web
     runtime: static
     rootDir: apps/web
@@ -9,6 +36,9 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
 
   - type: worker
     name: adn-bot
