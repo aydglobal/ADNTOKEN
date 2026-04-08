@@ -226,14 +226,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (tapFlushTimerRef.current) {
-        window.clearTimeout(tapFlushTimerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     const handler = (data: { level: number }) => {
       setLevelUpOverlay({ level: data.level, visible: true });
     };
@@ -247,6 +239,14 @@ export default function App() {
       setNow(Date.now());
     }, 5000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tapFlushTimerRef.current) {
+        window.clearTimeout(tapFlushTimerRef.current);
+      }
+    };
   }, []);
 
   const refreshAll = async () => {
@@ -450,20 +450,26 @@ export default function App() {
 
     const tapsToSend = pendingTapCountRef.current;
     pendingTapCountRef.current = 0;
+    const optimisticGain = pendingTapGainRef.current;
 
     try {
       const result = await postJSON<TapResult>(
         '/api/game/tap',
-        { taps: tapsToSend, clientNonce: user.tapNonce ?? 0 },
+        {
+          taps: tapsToSend,
+          clientNonce: user.tapNonce ?? 0
+        },
         token
       );
 
       setUser((prev: any) => {
         if (!prev) return prev;
+
         const safeCoins = Math.max(prev.coins, result.coins);
         const safeEnergy = typeof result.energy === 'number'
           ? result.energy
           : Math.max(0, prev.energy - tapsToSend);
+
         return {
           ...prev,
           coins: safeCoins,
@@ -476,7 +482,7 @@ export default function App() {
         };
       });
 
-      pendingTapGainRef.current = 0;
+      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
 
       if (user.level && result.level && shouldShowLevelUp(user.level, result.level)) {
         gameBus.emit('level_up', { level: result.level });
@@ -486,15 +492,19 @@ export default function App() {
         if (!prev) return prev;
         return {
           ...prev,
-          coins: Math.max(0, prev.coins - pendingTapGainRef.current),
+          coins: Math.max(0, prev.coins - optimisticGain),
           energy: Math.min(prev.maxEnergy, prev.energy + tapsToSend)
         };
       });
-      pendingTapGainRef.current = 0;
+
+      pendingTapGainRef.current = Math.max(0, pendingTapGainRef.current - optimisticGain);
     } finally {
       tapRequestInFlightRef.current = false;
+
       if (pendingTapCountRef.current > 0) {
-        tapFlushTimerRef.current = window.setTimeout(() => { flushQueuedTaps(); }, 80);
+        tapFlushTimerRef.current = window.setTimeout(() => {
+          void flushQueuedTaps();
+        }, 80);
       }
     }
   }
@@ -510,7 +520,11 @@ export default function App() {
     const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
     const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
 
-    const perTapGain = Math.max(1, Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier));
+    const perTapGain = Math.max(
+      1,
+      Math.round((user.tapPower || 1) * (user.tapMultiplier || 1) * comboMultiplier)
+    );
+
     const isCrit = Math.random() < 0.06;
     const totalGain = isCrit ? Math.round(perTapGain * 2) : perTapGain;
 
@@ -525,14 +539,23 @@ export default function App() {
     pendingTapCountRef.current += 1;
     pendingTapGainRef.current += totalGain;
 
-    setUser((prev: any) => prev ? {
-      ...prev,
-      coins: prev.coins + totalGain,
-      energy: Math.max(0, prev.energy - 1)
-    } : prev);
+    setUser((prev: any) =>
+      prev
+        ? {
+            ...prev,
+            coins: prev.coins + totalGain,
+            energy: Math.max(0, prev.energy - 1)
+          }
+        : prev
+    );
 
-    if (tapFlushTimerRef.current) window.clearTimeout(tapFlushTimerRef.current);
-    tapFlushTimerRef.current = window.setTimeout(() => { flushQueuedTaps(); }, 90);
+    if (tapFlushTimerRef.current) {
+      window.clearTimeout(tapFlushTimerRef.current);
+    }
+
+    tapFlushTimerRef.current = window.setTimeout(() => {
+      void flushQueuedTaps();
+    }, 90);
   }
 
   async function handleDailyClaim() {

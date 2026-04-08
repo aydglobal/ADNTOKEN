@@ -3545,7 +3545,7 @@ label {
   border-color: rgba(56,189,248,0.25) !important;
 }
 
-/* ===== PREMIUM LIGHT THEME PATCH ===== */
+
 :root {
   --adn-bg: linear-gradient(180deg, #f8fbff 0%, #eef4ff 48%, #e7efff 100%);
   --adn-surface: rgba(255,255,255,0.84);
@@ -3566,40 +3566,60 @@ body {
   color: var(--adn-text);
 }
 
-.adn-shell, .game-shell, .app-shell, .adn-card, .premium-card, .game-panel {
+.adn-shell,
+.game-shell,
+.app-shell,
+.adn-card,
+.premium-card,
+.game-panel {
   background: var(--adn-surface);
   backdrop-filter: blur(18px);
   border: 1px solid var(--adn-border);
   box-shadow: var(--adn-shadow);
 }
 
-.adn-topbar, .game-header, .bottom-nav-pro, .game-dock {
+.adn-topbar,
+.game-header,
+.bottom-nav-pro,
+.game-dock {
   background: rgba(255,255,255,0.88);
   border: 1px solid rgba(15,23,42,0.08);
   backdrop-filter: blur(20px);
   box-shadow: 0 10px 26px rgba(15,23,42,0.07);
 }
 
-.adn-balance, .adn-hero-title, .adn-stat-chip__val, .game-brand__title, .game-hero__title {
+.adn-balance,
+.adn-hero-title,
+.adn-stat-chip__val,
+.game-brand__title,
+.game-hero__title {
   color: var(--adn-text);
 }
 
-.adn-subtle, .game-hero__subtitle, .adn-stat-chip__label, .game-brand__sub {
+.adn-subtle,
+.game-hero__subtitle,
+.adn-stat-chip__label,
+.game-brand__sub {
   color: var(--adn-text-soft);
 }
 
-.adn-primary-btn, .primary-action-button, button.is-primary {
+.adn-primary-btn,
+.primary-action-button,
+button.is-primary {
   background: linear-gradient(135deg, #ffd54a 0%, #f7b500 100%);
   color: #1f2937;
   border: 0;
   box-shadow: 0 12px 28px rgba(247,181,0,0.24);
 }
 
-.adn-primary-btn:hover, .primary-action-button:hover, button.is-primary:hover {
+.adn-primary-btn:hover,
+.primary-action-button:hover,
+button.is-primary:hover {
   transform: translateY(-1px);
 }
 
-.adn-tap-btn, .game-tapper__button {
+.adn-tap-btn,
+.game-tapper__button {
   background:
     radial-gradient(circle at 50% 30%, rgba(255,255,255,0.98), rgba(255,255,255,0.88) 58%, rgba(236,244,255,0.95) 100%);
   border: 1px solid rgba(15,23,42,0.08);
@@ -3609,7 +3629,8 @@ body {
     0 0 40px rgba(247,181,0,0.16);
 }
 
-.adn-tap-btn:active, .game-tapper__button:active {
+.adn-tap-btn:active,
+.game-tapper__button:active {
   transform: scale(0.985);
 }
 
@@ -3622,7 +3643,8 @@ body {
   background: linear-gradient(90deg, #2ed8a7 0%, #26c6da 100%);
 }
 
-.game-dock__button.is-active, .bottom-nav-pro__item.is-active {
+.game-dock__button.is-active,
+.bottom-nav-pro__item.is-active {
   color: #0f172a;
   background: linear-gradient(180deg, rgba(247,181,0,0.18), rgba(38,198,218,0.12));
 }
