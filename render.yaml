@@ -3,7 +3,7 @@ services:
     name: adn-web
     runtime: static
     rootDir: apps/web
-    buildCommand: npm install -g pnpm@9.15.0 && pnpm install --dir ../.. --no-frozen-lockfile && pnpm --dir ../.. --filter web build
+    buildCommand: cd /opt/render/project/src && npm install -g pnpm@9.15.0 && pnpm install --no-frozen-lockfile && pnpm --filter web build
     staticPublishPath: dist
     routes:
       - type: rewrite
