@@ -95,7 +95,7 @@ textarea {
   position: relative;
   isolation: isolate;
   min-height: var(--tg-viewport-height, 100vh);
-  padding: 20px 14px 112px;
+  padding: 10px 10px 72px;
 }
 
 .game-shell::before,
@@ -2346,7 +2346,7 @@ textarea {
 
 @media (max-width: 720px) {
   .game-shell {
-    padding: 12px 10px 108px;
+    padding: 10px 10px 72px;
   }
 
   /* Loading screen mobilde tek kolon */

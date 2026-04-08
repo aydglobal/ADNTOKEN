@@ -1721,8 +1721,8 @@ function TasksSection({
   return (
     <section className="game-section" style={{ padding: '14px 12px' }}>
       {/* Başlık */}
-      <div style={{ textAlign: 'center', marginBottom: 14 }}>
-        <h2 style={{ margin: 0, fontFamily: 'var(--adn-title-font)', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', color: '#F3F7FB' }}>
+      <div style={{ textAlign: 'center', marginBottom: 12 }}>
+        <h2 style={{ margin: 0, fontFamily: 'var(--adn-title-font)', fontSize: 'clamp(1.1rem, 4vw, 1.4rem)', color: 'var(--adn-text)' }}>
           Kazan
         </h2>
       </div>
