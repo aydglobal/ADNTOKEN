@@ -998,11 +998,15 @@ export default function App() {
               ripples={ripples}
               energyPercent={energyPercent}
               energyVariant={energyVariant}
+              claimPercent={claimPercent}
               comboCount={comboCount}
               comboMultiplier={comboMultiplier}
               isComboActive={isComboActive}
+              activeBoostCount={activeBoosts.length}
               busyKey={busyKey}
               now={now}
+              currentFeed={currentFeed}
+              onNavigate={navigateToTab}
               onTapStart={handleTapStart}
               onTapEnd={stopTapHold}
             />
@@ -1573,11 +1577,15 @@ function MineSection({
   ripples,
   energyPercent,
   energyVariant,
+  claimPercent,
   comboCount,
   comboMultiplier,
   isComboActive,
+  activeBoostCount,
   busyKey,
   now,
+  currentFeed,
+  onNavigate,
   onTapStart,
   onTapEnd
 }: {
@@ -1590,20 +1598,77 @@ function MineSection({
   ripples: Ripple[];
   energyPercent: number;
   energyVariant: EnergyBarVariant;
+  claimPercent: number;
   comboCount: number;
   comboMultiplier: number;
   isComboActive: boolean;
+  activeBoostCount: number;
   busyKey: string | null;
   now: number;
+  currentFeed: string;
+  onNavigate: (tab: TabKey) => void;
   onTapStart: (event: PointerEvent<HTMLButtonElement>) => void;
   onTapEnd: () => void;
 }) {
   const isReady = energyPercent >= 100;
-  const streakHistory = buildStreakHistory(daily?.streakDay || user.dailyStreak || 0);
+  const loopStep = dashboard.summary.claimable ? 'claim' : user.passiveIncomePerHour > 120 ? 'build' : 'tap';
 
   return (
     <>
       <section className="adn-mine-core">
+        <div className="adn-command-deck">
+          <div className="adn-command-deck__topline">
+            <span className="adn-command-deck__eyebrow">Core Loop</span>
+            <span className="adn-command-deck__feed">{currentFeed}</span>
+          </div>
+
+          <div className="adn-command-deck__hero">
+            <div className="adn-command-deck__copy">
+              <h2 className="adn-command-deck__title">Tap core aktif. ADN topla, ritmi buyut, claim kilidini ac.</h2>
+              <p className="adn-command-deck__subtitle">Ana hedef net: tap ile biriktir, shop ile hiz kazan, claim hazir olunca cek.</p>
+            </div>
+
+            <button className="game-button adn-command-deck__cta" onClick={() => onNavigate(loopStep === 'claim' ? 'wallet' : loopStep === 'build' ? 'boosts' : 'mine')}>
+              {loopStep === 'claim' ? 'Claim ekranina git' : loopStep === 'build' ? 'Shopu guclendir' : 'Tap ritmini koru'}
+            </button>
+          </div>
+
+          <div className="adn-loop-rail">
+            <LoopStep
+              icon="tap"
+              title="Tap"
+              meta={`+${fmt(Math.round(user.tapPower * (user.tapMultiplier || 1)))} / basis`}
+              state={loopStep === 'tap' ? 'active' : 'done'}
+            />
+            <LoopStep
+              icon="boost"
+              title="Build"
+              meta={`${fmt(user.passiveIncomePerHour)}/s gelir`}
+              state={loopStep === 'build' ? 'active' : loopStep === 'claim' ? 'done' : 'idle'}
+            />
+            <LoopStep
+              icon="wallet"
+              title="Claim"
+              meta={dashboard.summary.claimable ? 'Hazir' : `${Math.round(claimPercent)}% dolu`}
+              state={dashboard.summary.claimable ? 'active' : 'idle'}
+            />
+          </div>
+
+          <div className="adn-command-stats">
+            <div className="adn-command-stat adn-command-stat--gold">
+              <span className="adn-command-stat__label">ADN</span>
+              <strong className="adn-command-stat__value"><AnimatedNumber value={user.coins} /></strong>
+            </div>
+            <div className="adn-command-stat">
+              <span className="adn-command-stat__label">Saatlik</span>
+              <strong className="adn-command-stat__value"><AnimatedNumber value={user.passiveIncomePerHour} compact />/s</strong>
+            </div>
+            <div className="adn-command-stat">
+              <span className="adn-command-stat__label">Boost</span>
+              <strong className="adn-command-stat__value">{activeBoostCount} aktif</strong>
+            </div>
+          </div>
+        </div>
         {/* Combo göstergesi */}
         {isComboActive && (
           <div className="adn-combo-badge">
@@ -1688,6 +1753,30 @@ function MineSection({
         </div>
       </section>
     </>
+  );
+}
+
+function LoopStep({
+  icon,
+  title,
+  meta,
+  state
+}: {
+  icon: AppIconName;
+  title: string;
+  meta: string;
+  state: 'idle' | 'active' | 'done';
+}) {
+  return (
+    <div className={`adn-loop-step adn-loop-step--${state}`}>
+      <span className="adn-loop-step__icon">
+        <AppIcon name={icon} size={16} />
+      </span>
+      <div className="adn-loop-step__copy">
+        <strong>{title}</strong>
+        <span>{meta}</span>
+      </div>
+    </div>
   );
 }
 
