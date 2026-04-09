@@ -29,6 +29,12 @@ function canUsePreviewFromRequest(origin?: string | null) {
     // Vercel preview ve production deploy'ları
     if (hostname.endsWith('.vercel.app')) return true;
 
+    // adntrust.club domain'i
+    if (hostname === 'adntrust.club' || hostname === 'www.adntrust.club') return true;
+
+    // onrender.com static site'ları
+    if (hostname.endsWith('.onrender.com')) return true;
+
     // MINIAPP_URL ile eşleşen origin
     return normalizeOrigin(origin) === normalizeOrigin(new URL(env.MINIAPP_URL).origin);
   } catch {

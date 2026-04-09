@@ -82,6 +82,12 @@ function isAllowedOrigin(origin: string) {
       miniAppUrl.hostname.endsWith('.vercel.app');
 
     if (isVercelPreview) return true;
+
+    const isAdnTrust =
+      originUrl.hostname === 'adntrust.club' ||
+      originUrl.hostname === 'www.adntrust.club';
+
+    if (isAdnTrust) return true;
   } catch {
     return false;
   }
