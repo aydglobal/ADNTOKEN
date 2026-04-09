@@ -1,4 +1,4 @@
-const PRODUCTION_API_URL = 'https://adntoken.onrender.com';
+const PRODUCTION_API_URL = 'https://api.adntrust.club';
 const HARDCODED_ADMIN_SECRET = 'adn_admin_4c8e1a92f7b64d0d9e2c5a1b7f3e8c44_lock';
 
 function resolveApiUrl() {

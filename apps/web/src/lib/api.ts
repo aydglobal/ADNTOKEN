@@ -1,4 +1,4 @@
-const PRODUCTION_API_URL = 'https://adntoken.onrender.com';
+const PRODUCTION_API_URL = 'https://api.adntrust.club';
 
 function resolveApiUrl() {
   const configured = import.meta.env.VITE_API_URL?.trim();

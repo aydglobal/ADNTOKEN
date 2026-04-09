@@ -18,13 +18,13 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: MINIAPP_URL
-        sync: false
+        value: https://adntrust.club
       - key: ADMIN_SECRET
         sync: false
       - key: ADMIN_TELEGRAM_USERNAME
         sync: false
       - key: ALLOWED_ORIGINS
-        sync: false
+        value: https://adntrust.club,https://www.adntrust.club
 
   - type: web
     name: adn-web
@@ -38,7 +38,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://api.adntrust.club
 
   - type: worker
     name: adn-bot
@@ -50,7 +50,7 @@ services:
       - key: BOT_TOKEN
         sync: false
       - key: MINIAPP_URL
-        sync: false
+        value: https://adntrust.club
       - key: NODE_ENV
         value: production
       - key: PORT

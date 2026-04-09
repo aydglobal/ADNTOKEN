@@ -1,5 +1,5 @@
-const CACHE_STATIC = 'adn-static-v1';
-const CACHE_DYNAMIC = 'adn-dynamic-v1';
+const CACHE_STATIC = 'adn-static-v2';
+const CACHE_DYNAMIC = 'adn-dynamic-v2';
 const STATIC_MAX_AGE = 30 * 24 * 60 * 60; // 30 gün
 const SWR_MAX_AGE = 5 * 60; // 5 dakika
 
